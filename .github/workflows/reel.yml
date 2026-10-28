@@ -2,9 +2,10 @@ name: Postar Reel
 
 on:
   schedule:
-    - cron: "0 15 * * *"    # 12h00 Brasília
-    - cron: "0 20 * * *"    # 17h00 Brasília
-    - cron: "30 23 * * *"   # 20h30 Brasília
+    # minutos "quebrados" de propósito: o GitHub costuma descartar agendamentos na hora cheia
+    - cron: "4 15 * * *"    # 12h04 Brasília
+    - cron: "7 20 * * *"    # 17h07 Brasília
+    - cron: "34 23 * * *"   # 20h34 Brasília
   workflow_dispatch:         # botão "Run workflow" para postar na hora
     inputs:
       previa:
