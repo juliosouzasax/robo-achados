@@ -50,6 +50,14 @@ def enviar(url_assinada: str, arquivo: Path, tipo: str) -> None:
         r.read()
 
 
+# Chamada final falada (urgência sem prometer estoque que não sabemos)
+CTAS = [
+    "Corre que preço bom assim não dura! Clica no link da bio e procura o achado número {n}.",
+    "Gostou? O link tá na bio, é o achado número {n}. Aproveita enquanto tá nesse preço!",
+    "Não deixa pra depois: link na bio, achado número {n}. O preço pode mudar a qualquer hora!",
+]
+
+
 def foto_jpg(origem: Path, destino: Path) -> None:
     from PIL import Image
     Image.open(origem).convert("RGB").save(destino, "JPEG", quality=95)
@@ -69,9 +77,12 @@ def main() -> int:
         baixar(p["imagem_url"], d / "foto_original")
         foto_jpg(d / "foto_original", d / "foto.jpg")
 
-        palavras = narrar(p["narracao"], os.environ["ELEVENLABS_VOICE_ID"], os.environ["ELEVENLABS_API_KEY"], d / "voz.mp3")
+        cta = CTAS[int(p["numero"]) % len(CTAS)].format(n=p["numero"])
+        texto = p["narracao"].rstrip() + " " + cta
+        palavras = narrar(texto, os.environ["ELEVENLABS_VOICE_ID"], os.environ["ELEVENLABS_API_KEY"], d / "voz.mp3")
         roteiro = Roteiro(capa=p["capa"], beneficios=p["beneficios"], numero=p["numero"], preco=p["preco_txt"])
-        montar(d / "foto.jpg", roteiro, palavras, d / "voz.mp3", Fontes(FONTES), d / "reel.mp4", d / "capa.jpg")
+        montar(d / "foto.jpg", roteiro, palavras, d / "voz.mp3", Fontes(FONTES), d / "reel.mp4", d / "capa.jpg",
+               n_cta=len(cta.split()))
 
         enviar(p["upload_video"], d / "reel.mp4", "video/mp4")
         enviar(p["upload_capa"], d / "capa.jpg", "image/jpeg")
