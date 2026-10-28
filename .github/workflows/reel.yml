@@ -4,7 +4,12 @@ on:
   schedule:
     - cron: "0 15 * * *"    # 12h00 Brasília
     - cron: "30 22 * * *"   # 19h30 Brasília
-  workflow_dispatch: {}      # botão "Run workflow" para postar na hora
+  workflow_dispatch:         # botão "Run workflow" para postar na hora
+    inputs:
+      previa:
+        description: "Só gerar o vídeo para ver (não posta)"
+        type: boolean
+        default: false
 
 concurrency:
   group: reel
@@ -45,12 +50,13 @@ jobs:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           ELEVENLABS_VOICE_ID: ${{ secrets.ELEVENLABS_VOICE_ID }}
           FONTES_DIR: fonts
+          PREVIA: ${{ inputs.previa }}
         run: python main.py
 
   # Atualiza a vitrine (link na bio) mesmo se o Reel falhar
   vitrine:
     needs: reel
-    if: always()
+    if: always() && inputs.previa != true
     runs-on: ubuntu-latest
     environment:
       name: github-pages
