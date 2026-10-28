@@ -87,6 +87,15 @@ def main() -> int:
         enviar(p["upload_video"], d / "reel.mp4", "video/mp4")
         enviar(p["upload_capa"], d / "capa.jpg", "image/jpeg")
 
+        # cópia para o TikTok (o workflow publica em Releases > videos)
+        saida = Path(__file__).resolve().parent / "out"
+        saida.mkdir(exist_ok=True)
+        nome = f"{'previa-' if PREVIA else ''}achado-{p['numero']}-{int(time.time())}"
+        (saida / f"{nome}.mp4").write_bytes((d / "reel.mp4").read_bytes())
+        (saida / f"{nome}.txt").write_text(
+            f"{p['capa']} 👀 Achado #{p['numero']} por {p['preco_txt']}! Link na bio 👉 procure o nº {p['numero']} "
+            "#achadinhos #achadosdashopee #shopee #shopeebrasil #publi", encoding="utf-8")
+
     if PREVIA:
         print("PRÉVIA (não postado). Vídeo:", p["url_video"], "| Capa:", p["url_capa"])
         return 0
