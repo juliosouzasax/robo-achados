@@ -24,6 +24,7 @@ ROBO = os.environ["ROBO_URL"]
 ANON = os.environ["SUPABASE_ANON_KEY"]
 FONTES = Path(os.environ.get("FONTES_DIR", "fonts"))
 PREVIA = os.environ.get("PREVIA", "").lower() == "true"  # só monta o vídeo, não posta
+PRODUTO = os.environ.get("PRODUTO", "").strip().lstrip("#")  # nº do achado para postar agora (opcional)
 
 
 def robo(acao: str, **params) -> dict:
@@ -55,7 +56,10 @@ def foto_jpg(origem: Path, destino: Path) -> None:
 
 
 def main() -> int:
-    p = robo("proximo_reel", previa="1") if PREVIA else robo("proximo_reel")
+    extra = {"previa": "1"} if PREVIA else {}
+    if PRODUTO:
+        extra["id"] = PRODUTO
+    p = robo("proximo_reel", **extra)
     if p.get("pulado"):
         print("Nada a fazer:", p)
         return 0
