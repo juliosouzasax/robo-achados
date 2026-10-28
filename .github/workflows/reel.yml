@@ -3,13 +3,18 @@ name: Postar Reel
 on:
   schedule:
     - cron: "0 15 * * *"    # 12h00 Brasília
-    - cron: "30 22 * * *"   # 19h30 Brasília
+    - cron: "0 20 * * *"    # 17h00 Brasília
+    - cron: "30 23 * * *"   # 20h30 Brasília
   workflow_dispatch:         # botão "Run workflow" para postar na hora
     inputs:
       previa:
         description: "Só gerar o vídeo para ver (não posta)"
         type: boolean
         default: false
+      produto:
+        description: "Nº do achado para postar agora (vazio = próximo da fila)"
+        type: string
+        default: ""
 
 concurrency:
   group: reel
@@ -51,6 +56,7 @@ jobs:
           ELEVENLABS_VOICE_ID: ${{ secrets.ELEVENLABS_VOICE_ID }}
           FONTES_DIR: fonts
           PREVIA: ${{ inputs.previa }}
+          PRODUTO: ${{ inputs.produto }}
         run: python main.py
 
   # Atualiza a vitrine (link na bio) mesmo se o Reel falhar
