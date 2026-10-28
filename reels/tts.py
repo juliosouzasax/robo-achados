@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import base64
 import json
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -11,16 +12,37 @@ from render import Palavra
 URL = "https://api.elevenlabs.io/v1/text-to-speech/{voz}/with-timestamps?output_format=mp3_44100_128"
 
 
-def narrar(texto: str, voz: str, chave: str, saida: Path, modelo: str = "eleven_multilingual_v2") -> list[Palavra]:
-    corpo = json.dumps({
-        "text": texto,
-        "model_id": modelo,
-        "voice_settings": {"stability": 0.45, "similarity_boost": 0.8, "style": 0.35, "use_speaker_boost": True},
-    }).encode()
+# Eleven v4 é o modelo mais natural/emotivo; se a API recusar, cai no v2
+MODELOS = [
+    ("eleven_v4", {"stability": 0.5, "similarity_boost": 0.8}),
+    ("eleven_multilingual_v2", {"stability": 0.35, "similarity_boost": 0.8, "style": 0.45, "use_speaker_boost": True}),
+]
+
+
+def _pedir(texto: str, voz: str, chave: str, modelo: str, ajustes: dict) -> dict:
+    corpo = {"text": texto, "model_id": modelo, "voice_settings": ajustes}
+    if modelo.startswith("eleven_v4"):
+        corpo["language_code"] = "pt"
+    corpo = json.dumps(corpo).encode()
     req = urllib.request.Request(URL.format(voz=voz), data=corpo, method="POST",
                                  headers={"xi-api-key": chave, "Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=120) as r:
-        j = json.load(r)
+        return json.load(r)
+
+
+def narrar(texto: str, voz: str, chave: str, saida: Path) -> list[Palavra]:
+    erro = None
+    for modelo, ajustes in MODELOS:
+        try:
+            j = _pedir(texto, voz, chave, modelo, ajustes)
+            if j.get("alignment"):
+                print("Voz gerada com", modelo)
+                break
+        except urllib.error.HTTPError as e:
+            erro = f"{modelo}: {e.code} {e.read()[:300]!r}"
+            print("Modelo recusado ->", erro)
+    else:
+        raise RuntimeError(f"ElevenLabs falhou: {erro}")
 
     saida.write_bytes(base64.b64decode(j["audio_base64"]))
     al = j["alignment"]
