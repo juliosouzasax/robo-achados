@@ -127,7 +127,8 @@ def montar(foto: Path, roteiro: Roteiro, palavras: list[Palavra], audio: Path, f
          "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
          "-i", str(audio),
          "-c:v", "libx264", "-preset", "veryfast", "-crf", "21", "-pix_fmt", "yuv420p",
-         "-c:a", "aac", "-b:a", "128k", "-ar", "44100", "-shortest", "-movflags", "+faststart",
+         "-af", "apad", "-t", f"{n_frames / FPS:.3f}",  # silêncio no fim cobre a chamada final
+         "-c:a", "aac", "-b:a", "128k", "-ar", "44100", "-movflags", "+faststart",
          str(saida_video)],
         stdin=subprocess.PIPE,
     )
