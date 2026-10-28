@@ -99,10 +99,16 @@ def _palavra_chave(txt: list[str]) -> int:
 
 
 def montar(foto: Path, roteiro: Roteiro, palavras: list[Palavra], audio: Path, fontes: Fontes,
-           saida_video: Path, saida_capa: Path) -> None:
-    dur_fala = palavras[-1].fim if palavras else 8.0
-    dur_cta = 2.6
-    duracao = dur_fala + dur_cta
+           saida_video: Path, saida_capa: Path, n_cta: int = 0) -> None:
+    """n_cta = quantas palavras finais da narração são a chamada (CTA) falada."""
+    n_cta = min(n_cta, max(0, len(palavras) - 1))
+    if palavras and n_cta:
+        dur_fala = palavras[-n_cta].ini          # a tela de CTA entra junto com a fala do CTA
+        duracao = palavras[-1].fim + 1.2         # e fica mais um pouquinho depois que ela termina
+        palavras = palavras[:-n_cta]             # legenda só até o CTA (a tela já mostra o recado)
+    else:
+        dur_fala = palavras[-1].fim if palavras else 8.0
+        duracao = dur_fala + 2.6
     n_frames = int(duracao * FPS)
 
     original = Image.open(foto).convert("RGB")
@@ -191,7 +197,7 @@ def montar(foto: Path, roteiro: Roteiro, palavras: list[Palavra], audio: Path, f
         # chamada final
         if t >= dur_fala:
             p = _suave((t - dur_fala) / 0.35)
-            yc = int(1560 + (1 - p) * 120)
+            yc = int(1560 + (1 - p) * 120 - 10 * abs(math.sin((t - dur_fala) * 4)))  # pulsa
             msg = "LINK NA BIO"
             lc = d.textlength(msg, font=f_cta)
             d.rounded_rectangle(((W - lc) // 2 - 60, yc, (W + lc) // 2 + 60, yc + 120), radius=60, fill=LARANJA)
