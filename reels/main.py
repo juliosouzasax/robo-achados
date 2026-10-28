@@ -32,7 +32,7 @@ def robo(acao: str, **params) -> dict:
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {ANON}"})
     with urllib.request.urlopen(req, timeout=140) as r:
         j = json.load(r)
-    if "erro" in j:
+    if j.get("erro") and acao != "checar":  # em "checar", erro=False/True é status, não falha
         raise RuntimeError(f"{acao}: {j['erro']}")
     return j
 
