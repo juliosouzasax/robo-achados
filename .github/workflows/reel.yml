@@ -1,0 +1,73 @@
+name: Postar Reel
+
+on:
+  schedule:
+    - cron: "0 15 * * *"    # 12h00 Brasília
+    - cron: "30 22 * * *"   # 19h30 Brasília
+  workflow_dispatch: {}      # botão "Run workflow" para postar na hora
+
+concurrency:
+  group: reel
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+env:
+  ROBO_URL: https://qycdxxlzjlueyavmzkqy.supabase.co/functions/v1/robo
+
+jobs:
+  reel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar ferramentas
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          pip install -q pillow
+          mkdir -p reels/fonts
+          base=https://cdn.jsdelivr.net/npm/@expo-google-fonts/montserrat@0.4.2
+          curl -sSfL -o reels/fonts/Montserrat_800ExtraBold.ttf $base/800ExtraBold/Montserrat_800ExtraBold.ttf
+          curl -sSfL -o reels/fonts/Montserrat_600SemiBold.ttf $base/600SemiBold/Montserrat_600SemiBold.ttf
+
+      - name: Montar e postar o Reel
+        working-directory: reels
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          ELEVENLABS_VOICE_ID: ${{ secrets.ELEVENLABS_VOICE_ID }}
+          FONTES_DIR: fonts
+        run: python main.py
+
+  # Atualiza a vitrine (link na bio) mesmo se o Reel falhar
+  vitrine:
+    needs: reel
+    if: always()
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Gerar vitrine
+        working-directory: reels
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: python vitrine.py
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
