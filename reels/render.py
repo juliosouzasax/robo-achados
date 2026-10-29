@@ -8,7 +8,7 @@ Estrutura do vídeo (inspirada nos Reels de achadinhos que mais performam):
   - legenda palavra a palavra no centro, palavra-chave em amarelo
   - pílulas de benefício (✓) entrando uma a uma no meio do vídeo
   - selo da Shopee e marca fixa no topo, #publi
-  - final com chamada "Link na bio · Achado #N"
+  - final com chamada "Comenta EU QUERO" (o robô manda o link no direct)
 """
 from __future__ import annotations
 
@@ -198,11 +198,11 @@ def montar(foto: Path, roteiro: Roteiro, palavras: list[Palavra], audio: Path, f
         if t >= dur_fala:
             p = _suave((t - dur_fala) / 0.35)
             yc = int(1560 + (1 - p) * 120 - 10 * abs(math.sin((t - dur_fala) * 4)))  # pulsa
-            msg = "LINK NA BIO"
+            msg = "COMENTA EU QUERO"
             lc = d.textlength(msg, font=f_cta)
             d.rounded_rectangle(((W - lc) // 2 - 60, yc, (W + lc) // 2 + 60, yc + 120), radius=60, fill=LARANJA)
             d.text(((W - lc) // 2, yc + 28), msg, font=f_cta, fill=BRANCO)
-            sub = f"Procure o Achado #{roteiro.numero} na vitrine"
+            sub = f"que o link chega no seu direct • Achado #{roteiro.numero}"
             ls = d.textlength(sub, font=f_sub)
             _texto_contorno(d, ((W - ls) // 2, yc + 150), sub, f_sub, BRANCO)
 
