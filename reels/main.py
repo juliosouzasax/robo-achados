@@ -52,9 +52,9 @@ def enviar(url_assinada: str, arquivo: Path, tipo: str) -> None:
 
 # Chamada final falada (urgência sem prometer estoque que não sabemos)
 CTAS = [
-    "Corre que preço bom assim não dura! Clica no link da bio e procura o achado número {n}.",
-    "Gostou? O link tá na bio, é o achado número {n}. Aproveita enquanto tá nesse preço!",
-    "Não deixa pra depois: link na bio, achado número {n}. O preço pode mudar a qualquer hora!",
+    "Gostou? Comenta EU QUERO que eu te mando o link no direct! É o achado número {n}.",
+    "Quer o link? Comenta EU QUERO aqui embaixo que ele chega no seu direct. Corre que preço bom não dura!",
+    "Comenta EU QUERO que eu te mando o link agora no direct. O preço pode mudar a qualquer hora!",
 ]
 
 
