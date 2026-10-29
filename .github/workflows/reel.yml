@@ -1,11 +1,8 @@
 name: Postar Reel
 
 on:
-  schedule:
-    # minutos "quebrados" de propósito: o GitHub costuma descartar agendamentos na hora cheia
-    - cron: "4 15 * * *"    # 12h04 Brasília
-    - cron: "7 20 * * *"    # 17h07 Brasília
-    - cron: "34 23 * * *"   # 20h34 Brasília
+  # Horários (12h04, 17h07, 20h34) disparados pelo Supabase (pg_cron -> disparar_reel),
+  # porque o agendamento do próprio GitHub atrasa ou pula execuções.
   workflow_dispatch:         # botão "Run workflow" para postar na hora
     inputs:
       previa:
