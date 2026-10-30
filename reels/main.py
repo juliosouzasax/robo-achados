@@ -17,7 +17,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-from render import Fontes, Roteiro, montar, montar_sobre_video
+from render import Fontes, Roteiro, montar, montar_sobre_video, video_tem_letreiro
 from tts import narrar
 
 ROBO = os.environ["ROBO_URL"]
@@ -84,6 +84,8 @@ def main() -> int:
             if estoque:  # vídeo de banco de imagens mostra a cena; o card mostra o produto de verdade
                 baixar(p["imagem_url"], d / "foto_original")
                 foto_jpg(d / "foto_original", d / "foto.jpg")
+            letreiro = video_tem_letreiro(d / "base.mp4") if not estoque else False
+            print("Vídeo já tem letreiro próprio:", letreiro)
             palavra = p.get("palavra") or "EU QUERO"
             cta = f"Comenta {palavra.upper()} que eu te mando o link!"
             texto = p["narracao"].rstrip() + " " + cta
@@ -91,7 +93,8 @@ def main() -> int:
             montar_sobre_video(d / "base.mp4", p.get("frase_topo") or p["capa"], palavra, palavras, d / "voz.mp3",
                                Fontes(FONTES), d / "reel.mp4", d / "capa.jpg", n_cta=len(cta.split()),
                                aviso_ia="/ia/" in p["video_base"],
-                               foto=(d / "foto.jpg") if estoque else None, preco=p["preco_txt"] if estoque else None)
+                               foto=(d / "foto.jpg") if estoque else None, preco=p["preco_txt"] if estoque else None,
+                               legenda_on=not letreiro, som_original=False)
         else:
             baixar(p["imagem_url"], d / "foto_original")
             foto_jpg(d / "foto_original", d / "foto.jpg")
