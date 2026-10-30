@@ -285,7 +285,8 @@ def _tem_audio(arq: Path) -> bool:
 
 def montar_sobre_video(base: Path, frase_topo: str, palavra_cta: str, palavras: list[Palavra], audio: Path,
                        fontes: Fontes, saida_video: Path, saida_capa: Path, n_cta: int = 0, aviso_ia: bool = False,
-                       foto: Path | None = None, preco: str | None = None) -> None:
+                       foto: Path | None = None, preco: str | None = None,
+                       legenda_on: bool = True, som_original: bool = False) -> None:
     """Reel no estilo 'caixinha no topo': vídeo real/ilustrativo de fundo, narração, legenda e CTA com palavra."""
     n_cta = min(n_cta, max(0, len(palavras) - 1))
     ini_cta = palavras[-n_cta].ini if n_cta else (palavras[-1].fim if palavras else 6.0)
@@ -306,7 +307,7 @@ def montar_sobre_video(base: Path, frase_topo: str, palavra_cta: str, palavras: 
          "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
          "-i", str(audio), "-stream_loop", "-1", "-i", str(base),
          "-filter_complex", ("[2:a]volume=0.18[amb];[1:a]apad[voz];[voz][amb]amix=inputs=2:duration=first:normalize=0[a]"
-                             if _tem_audio(base) else "[1:a]apad[a]"),
+                             if som_original and _tem_audio(base) else "[1:a]apad[a]"),
          "-map", "0:v", "-map", "[a]", "-t", f"{n_frames / FPS:.3f}",
          "-c:v", "libx264", "-preset", "veryfast", "-crf", "21", "-pix_fmt", "yuv420p",
          "-c:a", "aac", "-b:a", "128k", "-ar", "44100", "-movflags", "+faststart", str(saida_video)],
@@ -349,7 +350,7 @@ def montar_sobre_video(base: Path, frase_topo: str, palavra_cta: str, palavras: 
         _caixa_texto(d, _quebrar(frase_topo, f_topo, d, W - 200), f_topo, 230, (255, 255, 255, 245), PRETO)
 
         if t < ini_cta:
-            atual = next((g for g in grupos if g[0] <= t < g[1]), None)
+            atual = next((g for g in grupos if g[0] <= t < g[1]), None) if legenda_on else None
             if atual:
                 txt = [w.upper() for w in atual[2]]
                 k = _palavra_chave(atual[2])
@@ -381,3 +382,24 @@ def montar_sobre_video(base: Path, frase_topo: str, palavra_cta: str, palavras: 
     f = fontes.forte(84)
     _caixa_texto(d, _quebrar(frase_topo, f, d, W - 200), f, 300, (255, 255, 255, 245), PRETO, pad=(44, 30), raio=36)
     capa.save(saida_capa, "JPEG", quality=90)
+
+
+def video_tem_letreiro(base: Path, amostras: int = 6, ate_seg: float = 15.0) -> bool:
+    """Lê alguns quadros com OCR (tesseract). True se o vídeo já tem texto queimado (legenda/letreiro do vendedor)."""
+    import re
+    import tempfile
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            subprocess.run(["ffmpeg", "-loglevel", "error", "-i", str(base), "-t", f"{ate_seg}",
+                            "-vf", f"fps={amostras / ate_seg:.3f},scale=720:-2", f"{tmp}/q%02d.png"], check=True)
+            langs = subprocess.run(["tesseract", "--list-langs"], capture_output=True, text=True).stdout
+            lingua = "por" if "\npor" in langs else "eng"
+            palavras = 0
+            for q in sorted(Path(tmp).glob("q*.png")):
+                r = subprocess.run(["tesseract", str(q), "-", "--psm", "11", "-l", lingua],
+                                   capture_output=True, text=True, timeout=30)
+                palavras += len([w for w in re.findall(r"[A-Za-zÀ-ÿ]{3,}", r.stdout)])
+            return palavras >= 6
+    except Exception as e:  # sem tesseract ou falha: por segurança, considera que tem letreiro (não sobrepõe)
+        print("OCR falhou:", e)
+        return True
