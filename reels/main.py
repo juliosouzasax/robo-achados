@@ -80,13 +80,18 @@ def main() -> int:
         if p.get("video_base"):
             # vídeo pronto (anúncio da Shopee ou ilustrativo) + narração + caixinha no topo
             baixar(p["video_base"], d / "base.mp4")
+            estoque = "pexels.com" in p["video_base"] or "pixabay.com" in p["video_base"]
+            if estoque:  # vídeo de banco de imagens mostra a cena; o card mostra o produto de verdade
+                baixar(p["imagem_url"], d / "foto_original")
+                foto_jpg(d / "foto_original", d / "foto.jpg")
             palavra = p.get("palavra") or "EU QUERO"
             cta = f"Comenta {palavra.upper()} que eu te mando o link!"
             texto = p["narracao"].rstrip() + " " + cta
             palavras = narrar(texto, os.environ["ELEVENLABS_VOICE_ID"], os.environ["ELEVENLABS_API_KEY"], d / "voz.mp3")
             montar_sobre_video(d / "base.mp4", p.get("frase_topo") or p["capa"], palavra, palavras, d / "voz.mp3",
                                Fontes(FONTES), d / "reel.mp4", d / "capa.jpg", n_cta=len(cta.split()),
-                               aviso_ia="/ia/" in p["video_base"])
+                               aviso_ia="/ia/" in p["video_base"],
+                               foto=(d / "foto.jpg") if estoque else None, preco=p["preco_txt"] if estoque else None)
         else:
             baixar(p["imagem_url"], d / "foto_original")
             foto_jpg(d / "foto_original", d / "foto.jpg")
