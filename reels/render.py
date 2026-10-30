@@ -296,7 +296,9 @@ def montar_sobre_video(base: Path, frase_topo: str, palavra_cta: str, palavras: 
     # quadros do vídeo de fundo (em loop se a narração for mais longa)
     dec = subprocess.Popen(
         ["ffmpeg", "-loglevel", "error", "-stream_loop", "-1", "-i", str(base), "-t", f"{duracao:.3f}",
-         "-vf", f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},fps={FPS}",
+         # vídeo inteiro na largura da tela, sobre um fundo desfocado dele mesmo (serve p/ quadrado, horizontal e vertical)
+         "-vf", (f"split[a][b];[a]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},boxblur=28:4,"
+                 f"eq=brightness=-0.10[bg];[b]scale={W}:-2[fg];[bg][fg]overlay=0:(H-h)/2,fps={FPS}"),
          "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], stdout=subprocess.PIPE)
     enc = subprocess.Popen(
         ["ffmpeg", "-y", "-loglevel", "error",
@@ -334,11 +336,11 @@ def montar_sobre_video(base: Path, frase_topo: str, palavra_cta: str, palavras: 
                 total = sum(d.textlength(w + " ", font=f_leg) for w in txt)
                 x = (W - total) // 2
                 for i, w in enumerate(txt):
-                    _texto_contorno(d, (x, 1330), w, f_leg, AMARELO if i == k else BRANCO)
+                    _texto_contorno(d, (x, 1560), w, f_leg, AMARELO if i == k else BRANCO)
                     x += d.textlength(w + " ", font=f_leg)
         else:
             p = _suave((t - ini_cta) / 0.3)
-            yc = int(1330 + (1 - p) * 80)
+            yc = int(1540 + (1 - p) * 80)
             _caixa_texto(d, [f"Comente {palavra_cta.upper()}", "que eu te mando o link"], f_cta, yc, LARANJA + (245,), BRANCO)
 
         if aviso_ia:
@@ -348,7 +350,7 @@ def montar_sobre_video(base: Path, frase_topo: str, palavra_cta: str, palavras: 
             d.text((56, 1698), aviso, font=f_ia, fill=BRANCO)
         enc.stdin.write(quadro.tobytes())
 
-    dec.stdout.close()
+    dec.kill()  # já temos todos os quadros; evita "broken pipe" do decodificador
     dec.wait()
     enc.stdin.close()
     if enc.wait() != 0:
