@@ -284,7 +284,8 @@ def _tem_audio(arq: Path) -> bool:
 
 
 def montar_sobre_video(base: Path, frase_topo: str, palavra_cta: str, palavras: list[Palavra], audio: Path,
-                       fontes: Fontes, saida_video: Path, saida_capa: Path, n_cta: int = 0, aviso_ia: bool = False) -> None:
+                       fontes: Fontes, saida_video: Path, saida_capa: Path, n_cta: int = 0, aviso_ia: bool = False,
+                       foto: Path | None = None, preco: str | None = None) -> None:
     """Reel no estilo 'caixinha no topo': vídeo real/ilustrativo de fundo, narração, legenda e CTA com palavra."""
     n_cta = min(n_cta, max(0, len(palavras) - 1))
     ini_cta = palavras[-n_cta].ini if n_cta else (palavras[-1].fim if palavras else 6.0)
@@ -317,6 +318,21 @@ def montar_sobre_video(base: Path, frase_topo: str, palavra_cta: str, palavras: 
     f_ia = fontes.media(28)
     tam = W * H * 3
     meio = None
+    card = None
+    if foto:
+        lado = 540
+        img = _cobrir(Image.open(foto).convert("RGB"), lado, lado)
+        card = Image.new("RGBA", (lado + 24, lado + 24 + (110 if preco else 0)), (0, 0, 0, 0))
+        dc = ImageDraw.Draw(card)
+        dc.rounded_rectangle((0, 0, card.width - 1, card.height - 1), radius=44, fill=(255, 255, 255, 255))
+        m = Image.new("L", (lado, lado), 0)
+        ImageDraw.Draw(m).rounded_rectangle((0, 0, lado, lado), radius=34, fill=255)
+        card.paste(img, (12, 12), m)
+        if preco:
+            fp = fontes.forte(60)
+            lp = dc.textlength(preco, font=fp)
+            dc.rounded_rectangle(((card.width - lp) // 2 - 36, lado + 30, (card.width + lp) // 2 + 36, lado + 112), radius=40, fill=LARANJA)
+            dc.text(((card.width - lp) // 2, lado + 36), preco, font=fp, fill=BRANCO)
     for n in range(n_frames):
         t = n / FPS
         bruto = dec.stdout.read(tam)
@@ -325,6 +341,10 @@ def montar_sobre_video(base: Path, frase_topo: str, palavra_cta: str, palavras: 
         quadro = Image.frombytes("RGB", (W, H), bruto)
         if n == int(min(1.5, duracao / 3) * FPS):
             meio = quadro.copy()
+        if card is not None:
+            p_in = _suave(t / 0.5)
+            yc_card = int(500 + (1 - p_in) * 60 + 8 * math.sin(t * 1.6))
+            quadro.paste(card, ((W - card.width) // 2, yc_card), card)
         d = ImageDraw.Draw(quadro, "RGBA")
         _caixa_texto(d, _quebrar(frase_topo, f_topo, d, W - 200), f_topo, 230, (255, 255, 255, 245), PRETO)
 
