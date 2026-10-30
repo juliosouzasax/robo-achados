@@ -43,7 +43,7 @@ jobs:
 
       - name: Instalar ferramentas
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg tesseract-ocr tesseract-ocr-por
           pip install -q pillow
           mkdir -p reels/fonts
           base=https://cdn.jsdelivr.net/npm/@expo-google-fonts/montserrat@0.4.2
