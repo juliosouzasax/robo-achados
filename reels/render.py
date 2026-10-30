@@ -252,3 +252,110 @@ def _capa(original: Image.Image, roteiro: Roteiro, fontes: Fontes, saida: Path) 
     capa.paste(borda, ((W - borda.width) // 2, yf), mb)
     capa.paste(foto, ((W - foto.width) // 2, yf + 12), m)
     capa.save(saida, "JPEG", quality=90)
+
+
+def _caixa_texto(d: ImageDraw.ImageDraw, linhas: list[str], f, y: int, fundo, cor, pad=(36, 22), raio=24) -> int:
+    lh = int(f.size * 1.25)
+    lw = max(int(d.textlength(l, font=f)) for l in linhas)
+    bw, bh = lw + 2 * pad[0], lh * len(linhas) + 2 * pad[1]
+    x0 = (W - bw) // 2
+    d.rounded_rectangle((x0, y, x0 + bw, y + bh), radius=raio, fill=fundo)
+    for i, l in enumerate(linhas):
+        d.text(((W - d.textlength(l, font=f)) // 2, y + pad[1] + i * lh + (lh - f.size) // 2 - 4), l, font=f, fill=cor)
+    return bh
+
+
+def _quebrar(texto: str, f, d: ImageDraw.ImageDraw, largura: int) -> list[str]:
+    linhas, atual = [], ""
+    for p in texto.split():
+        teste = (atual + " " + p).strip()
+        if d.textlength(teste, font=f) <= largura:
+            atual = teste
+        else:
+            linhas.append(atual)
+            atual = p
+    return [l for l in linhas + [atual] if l]
+
+
+def _tem_audio(arq: Path) -> bool:
+    r = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "a", "-show_entries", "stream=index", "-of", "csv=p=0", str(arq)],
+                       capture_output=True, text=True)
+    return bool(r.stdout.strip())
+
+
+def montar_sobre_video(base: Path, frase_topo: str, palavra_cta: str, palavras: list[Palavra], audio: Path,
+                       fontes: Fontes, saida_video: Path, saida_capa: Path, n_cta: int = 0, aviso_ia: bool = False) -> None:
+    """Reel no estilo 'caixinha no topo': vídeo real/ilustrativo de fundo, narração, legenda e CTA com palavra."""
+    n_cta = min(n_cta, max(0, len(palavras) - 1))
+    ini_cta = palavras[-n_cta].ini if n_cta else (palavras[-1].fim if palavras else 6.0)
+    duracao = (palavras[-1].fim + 1.0) if palavras else 10.0
+    legenda = palavras[:-n_cta] if n_cta else palavras
+    grupos = _grupos_legenda(legenda)
+    n_frames = int(duracao * FPS)
+
+    # quadros do vídeo de fundo (em loop se a narração for mais longa)
+    dec = subprocess.Popen(
+        ["ffmpeg", "-loglevel", "error", "-stream_loop", "-1", "-i", str(base), "-t", f"{duracao:.3f}",
+         "-vf", f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},fps={FPS}",
+         "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], stdout=subprocess.PIPE)
+    enc = subprocess.Popen(
+        ["ffmpeg", "-y", "-loglevel", "error",
+         "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
+         "-i", str(audio), "-stream_loop", "-1", "-i", str(base),
+         "-filter_complex", ("[2:a]volume=0.18[amb];[1:a]apad[voz];[voz][amb]amix=inputs=2:duration=first:normalize=0[a]"
+                             if _tem_audio(base) else "[1:a]apad[a]"),
+         "-map", "0:v", "-map", "[a]", "-t", f"{n_frames / FPS:.3f}",
+         "-c:v", "libx264", "-preset", "veryfast", "-crf", "21", "-pix_fmt", "yuv420p",
+         "-c:a", "aac", "-b:a", "128k", "-ar", "44100", "-movflags", "+faststart", str(saida_video)],
+        stdin=subprocess.PIPE)
+
+    f_topo = fontes.forte(56)
+    f_leg = fontes.forte(78)
+    f_cta = fontes.forte(54)
+    f_ia = fontes.media(28)
+    tam = W * H * 3
+    meio = None
+    for n in range(n_frames):
+        t = n / FPS
+        bruto = dec.stdout.read(tam)
+        if len(bruto) < tam:
+            break
+        quadro = Image.frombytes("RGB", (W, H), bruto)
+        if n == int(min(1.5, duracao / 3) * FPS):
+            meio = quadro.copy()
+        d = ImageDraw.Draw(quadro, "RGBA")
+        _caixa_texto(d, _quebrar(frase_topo, f_topo, d, W - 200), f_topo, 230, (255, 255, 255, 245), PRETO)
+
+        if t < ini_cta:
+            atual = next((g for g in grupos if g[0] <= t < g[1]), None)
+            if atual:
+                txt = [w.upper() for w in atual[2]]
+                k = _palavra_chave(atual[2])
+                total = sum(d.textlength(w + " ", font=f_leg) for w in txt)
+                x = (W - total) // 2
+                for i, w in enumerate(txt):
+                    _texto_contorno(d, (x, 1330), w, f_leg, AMARELO if i == k else BRANCO)
+                    x += d.textlength(w + " ", font=f_leg)
+        else:
+            p = _suave((t - ini_cta) / 0.3)
+            yc = int(1330 + (1 - p) * 80)
+            _caixa_texto(d, [f"Comente {palavra_cta.upper()}", "que eu te mando o link"], f_cta, yc, LARANJA + (245,), BRANCO)
+
+        if aviso_ia:
+            aviso = "Vídeo ilustrativo gerado com IA"
+            la = d.textlength(aviso, font=f_ia)
+            d.rounded_rectangle((40, 1690, 40 + la + 32, 1740), radius=14, fill=(0, 0, 0, 120))
+            d.text((56, 1698), aviso, font=f_ia, fill=BRANCO)
+        enc.stdin.write(quadro.tobytes())
+
+    dec.stdout.close()
+    dec.wait()
+    enc.stdin.close()
+    if enc.wait() != 0:
+        raise RuntimeError("ffmpeg falhou")
+
+    capa = meio or Image.new("RGB", (W, H), PRETO)
+    d = ImageDraw.Draw(capa, "RGBA")
+    f = fontes.forte(84)
+    _caixa_texto(d, _quebrar(frase_topo, f, d, W - 200), f, 300, (255, 255, 255, 245), PRETO, pad=(44, 30), raio=36)
+    capa.save(saida_capa, "JPEG", quality=90)
