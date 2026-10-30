@@ -13,6 +13,10 @@ on:
         description: "Nº do achado para postar agora (vazio = próximo da fila)"
         type: string
         default: ""
+      modo:
+        description: "Formato com nº do achado: foto ou video (vazio = automático)"
+        type: string
+        default: ""
 
 concurrency:
   group: reel
@@ -55,6 +59,7 @@ jobs:
           FONTES_DIR: fonts
           PREVIA: ${{ inputs.previa }}
           PRODUTO: ${{ inputs.produto }}
+          MODO: ${{ inputs.modo }}
         run: python main.py
 
   # Atualiza a vitrine (link na bio) mesmo se o Reel falhar
