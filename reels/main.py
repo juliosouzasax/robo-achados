@@ -17,7 +17,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-from render import Fontes, Roteiro, montar
+from render import Fontes, Roteiro, montar, montar_sobre_video
 from tts import narrar
 
 ROBO = os.environ["ROBO_URL"]
@@ -25,6 +25,7 @@ ANON = os.environ["SUPABASE_ANON_KEY"]
 FONTES = Path(os.environ.get("FONTES_DIR", "fonts"))
 PREVIA = os.environ.get("PREVIA", "").lower() == "true"  # só monta o vídeo, não posta
 PRODUTO = os.environ.get("PRODUTO", "").strip().lstrip("#")  # nº do achado para postar agora (opcional)
+MODO = os.environ.get("MODO", "").strip().lower()  # "foto" ou "video" (opcional, com PRODUTO)
 
 
 def robo(acao: str, **params) -> dict:
@@ -67,6 +68,8 @@ def main() -> int:
     extra = {"previa": "1"} if PREVIA else {}
     if PRODUTO:
         extra["id"] = PRODUTO
+        if MODO:
+            extra["modo"] = MODO
     p = robo("proximo_reel", **extra)
     if p.get("pulado"):
         print("Nada a fazer:", p)
@@ -74,15 +77,26 @@ def main() -> int:
 
     with tempfile.TemporaryDirectory() as tmp:
         d = Path(tmp)
-        baixar(p["imagem_url"], d / "foto_original")
-        foto_jpg(d / "foto_original", d / "foto.jpg")
+        if p.get("video_base"):
+            # vídeo pronto (anúncio da Shopee ou ilustrativo) + narração + caixinha no topo
+            baixar(p["video_base"], d / "base.mp4")
+            palavra = p.get("palavra") or "EU QUERO"
+            cta = f"Comenta {palavra.upper()} que eu te mando o link!"
+            texto = p["narracao"].rstrip() + " " + cta
+            palavras = narrar(texto, os.environ["ELEVENLABS_VOICE_ID"], os.environ["ELEVENLABS_API_KEY"], d / "voz.mp3")
+            montar_sobre_video(d / "base.mp4", p.get("frase_topo") or p["capa"], palavra, palavras, d / "voz.mp3",
+                               Fontes(FONTES), d / "reel.mp4", d / "capa.jpg", n_cta=len(cta.split()),
+                               aviso_ia="/ia/" in p["video_base"])
+        else:
+            baixar(p["imagem_url"], d / "foto_original")
+            foto_jpg(d / "foto_original", d / "foto.jpg")
 
-        cta = CTAS[int(p["numero"]) % len(CTAS)].format(n=p["numero"])
-        texto = p["narracao"].rstrip() + " " + cta
-        palavras = narrar(texto, os.environ["ELEVENLABS_VOICE_ID"], os.environ["ELEVENLABS_API_KEY"], d / "voz.mp3")
-        roteiro = Roteiro(capa=p["capa"], beneficios=p["beneficios"], numero=p["numero"], preco=p["preco_txt"])
-        montar(d / "foto.jpg", roteiro, palavras, d / "voz.mp3", Fontes(FONTES), d / "reel.mp4", d / "capa.jpg",
-               n_cta=len(cta.split()))
+            cta = CTAS[int(p["numero"]) % len(CTAS)].format(n=p["numero"])
+            texto = p["narracao"].rstrip() + " " + cta
+            palavras = narrar(texto, os.environ["ELEVENLABS_VOICE_ID"], os.environ["ELEVENLABS_API_KEY"], d / "voz.mp3")
+            roteiro = Roteiro(capa=p["capa"], beneficios=p["beneficios"], numero=p["numero"], preco=p["preco_txt"])
+            montar(d / "foto.jpg", roteiro, palavras, d / "voz.mp3", Fontes(FONTES), d / "reel.mp4", d / "capa.jpg",
+                   n_cta=len(cta.split()))
 
         enviar(p["upload_video"], d / "reel.mp4", "video/mp4")
         enviar(p["upload_capa"], d / "capa.jpg", "image/jpeg")
@@ -112,7 +126,7 @@ def main() -> int:
     else:
         raise RuntimeError("Instagram demorou demais para processar")
 
-    r = robo("publicar_reel", id=p["id"], reel=c["reel"], story=c["story"], video=p["caminho_video"])
+    r = robo("publicar_reel", id=p["id"], reel=c["reel"], story=c["story"], video=p["caminho_video"], modo=p.get("modo") or "foto")
     print("Publicado:", r)
     return 0
 
