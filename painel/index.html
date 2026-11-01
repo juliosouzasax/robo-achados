@@ -109,6 +109,32 @@ a{color:inherit}
 .fila .q{color:var(--suave);font-size:.8rem}
 .fila li.vez{background:linear-gradient(90deg,color-mix(in srgb,var(--amarelo) 22%,transparent),transparent);border-radius:10px;padding-left:8px;margin-left:-8px}
 
+/* vendas */
+.vendas{margin-top:22px}
+.vendas-cab{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.vendas .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:14px 0 6px;border:1px solid var(--linha);border-radius:var(--raio)}
+.vendas .kpi{padding:14px 16px;border-left:1px solid var(--linha)}
+.vendas .kpi:first-child{border-left:0}
+.vendas .kpi strong{display:block;font-size:1.6rem;font-weight:800;letter-spacing:-.02em}
+.vendas .kpi strong.dinheiro{color:var(--verde)}
+.vendas .kpi span{color:var(--suave);font-size:.85rem}
+.pedidos{list-style:none;margin:10px 0 0;padding:0}
+.pedidos li{display:grid;grid-template-columns:86px 1fr auto auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--linha);font-size:.93rem}
+.pedidos li:first-child{border-top:0}
+.pedidos .qd{color:var(--suave);font-size:.84rem}
+.pedidos .it{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pedidos .cm{font-weight:700;white-space:nowrap}
+.pill{font-size:.75rem;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill.pendente{background:color-mix(in srgb,var(--amarelo) 35%,transparent)}
+.pill.concluida{background:color-mix(in srgb,var(--verde) 22%,transparent);color:var(--verde)}
+.pill.cancelada{background:color-mix(in srgb,var(--vermelho) 15%,transparent);color:var(--vermelho)}
+@media (max-width:700px){
+  .vendas .kpis{grid-template-columns:repeat(2,1fr)}
+  .vendas .kpi:nth-child(3){border-left:0}
+  .vendas .kpi:nth-child(n+3){border-top:1px solid var(--linha)}
+  .pedidos li{grid-template-columns:1fr auto;}
+  .pedidos .qd{grid-column:1/-1}
+}
 .alerta{margin-top:22px;border:2px solid var(--vermelho);border-radius:var(--raio-grande);padding:18px 22px;background:color-mix(in srgb,var(--vermelho) 7%,var(--papel))}
 .alerta h3{margin:0 0 6px;color:var(--vermelho)}
 .alerta p{margin:4px 0;font-size:.92rem}
@@ -172,6 +198,16 @@ a{color:inherit}
 
   <section class="numeros" id="numeros" aria-label="Resumo"></section>
 
+  <section class="bloco vendas" aria-labelledby="titulo-vendas">
+    <div class="vendas-cab">
+      <h3 id="titulo-vendas">Vendas e comissões · últimos 30 dias</h3>
+      <a class="btn" href="https://affiliate.shopee.com.br/report/conversion_report" target="_blank" rel="noopener">Abrir relatório da Shopee</a>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <p class="nota">Pendente vira concluída quando o cliente recebe o produto. A Shopee paga só as concluídas.</p>
+    <ul class="pedidos" id="pedidos"><li class="vazio">Carregando…</li></ul>
+  </section>
+
   <div class="grade">
     <section class="bloco">
       <h3>Desempenho dos posts</h3>
@@ -200,8 +236,9 @@ a{color:inherit}
 const TZ = "America/Sao_Paulo";
 // Agenda do robô (horário de Brasília)
 const AGENDA = [
-  { h: 9, m: 0, tipo: "story" }, { h: 12, m: 0, tipo: "reel" }, { h: 14, m: 30, tipo: "story" },
-  { h: 17, m: 0, tipo: "reel" }, { h: 20, m: 30, tipo: "reel" }, { h: 22, m: 45, tipo: "story" },
+  { h: 9, m: 0, tipo: "story" }, { h: 9, m: 12, tipo: "reel" }, { h: 12, m: 4, tipo: "reel" }, { h: 14, m: 30, tipo: "story" },
+  { h: 14, m: 41, tipo: "reel" }, { h: 17, m: 7, tipo: "reel" }, { h: 19, m: 18, tipo: "reel" }, { h: 20, m: 34, tipo: "reel" },
+  { h: 22, m: 45, tipo: "story" },
 ];
 const $ = (id) => document.getElementById(id);
 const fmt = new Intl.NumberFormat("pt-BR");
@@ -212,6 +249,38 @@ const minutosBR = (d) => { const p = partes(d); return (+p.hour % 24) * 60 + +p.
 const hora = (d) => new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" }).format(d);
 const quando = (d) => new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(d);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+const STATUS = { PENDING: ["Pendente", "pendente"], COMPLETED: ["Concluída", "concluida"], CANCELLED: ["Cancelada", "cancelada"], UNPAID: ["Aguardando pagamento", "pendente"], INVALID: ["Cancelada", "cancelada"] };
+function desenharVendas(v) {
+  if (v.erro) {
+    $("kpis").innerHTML = "";
+    $("pedidos").innerHTML = `<li class="vazio">Não consegui ler as vendas da Shopee agora. Tente Atualizar em alguns minutos.</li>`;
+    return;
+  }
+  const linhas = [];
+  for (const conv of v.pedidos || []) {
+    for (const o of conv.orders || []) {
+      for (const it of o.items || []) {
+        linhas.push({ data: new Date(conv.purchaseTime * 1000), nome: it.itemName, qtd: Number(it.qty) || 1, com: Number(it.itemTotalCommission) || 0, status: o.orderStatus });
+      }
+    }
+  }
+  linhas.sort((a, b) => b.data - a.data);
+  const validas = linhas.filter((l) => !["CANCELLED", "INVALID"].includes(l.status));
+  const soma = (arr) => arr.reduce((s, l) => s + l.com, 0);
+  const pedidos = new Set();
+  for (const conv of v.pedidos || []) for (const o of conv.orders || []) if (!["CANCELLED", "INVALID"].includes(o.orderStatus)) pedidos.add(o.orderId);
+  $("kpis").innerHTML = [
+    [brl(soma(validas)), "comissão total", "dinheiro"],
+    [brl(soma(validas.filter((l) => l.status === "COMPLETED"))), "já concluída", ""],
+    [fmt.format(pedidos.size), pedidos.size === 1 ? "pedido" : "pedidos", ""],
+    [fmt.format(validas.reduce((s, l) => s + l.qtd, 0)), "itens vendidos", ""],
+  ].map(([n, r, c]) => `<div class="kpi"><strong class="${c}">${n}</strong><span>${r}</span></div>`).join("");
+  $("pedidos").innerHTML = linhas.length ? linhas.slice(0, 15).map((l) => {
+    const [rot, cls] = STATUS[l.status] || [l.status, "pendente"];
+    return `<li><span class="qd">${quando(l.data)}</span><span class="it" title="${esc(l.nome)}">${l.qtd > 1 ? l.qtd + "× " : ""}${esc(l.nome)}</span><span class="cm">${brl(l.com)}</span><span class="pill ${cls}">${rot}</span></li>`;
+  }).join("") : `<li class="vazio">Nenhuma venda nos últimos 30 dias ainda.</li>`;
+}
 
 async function carregar() {
   $("sub").textContent = "Atualizando…";
@@ -279,11 +348,14 @@ function desenhar(d) {
   $("titulo-dia").innerHTML = `Hoje: <span>${reelsHoje}</span> ${reelsHoje === 1 ? "post" : "posts"} e <span>${storiesHoje}</span> ${storiesHoje === 1 ? "Story" : "Stories"}`;
   $("prox").textContent = proximo
     ? `Próximo: ${proximo.tipo === "reel" ? "Reel" : "Story"} às ${String(proximo.h).padStart(2, "0")}:${String(proximo.m).padStart(2, "0")}`
-    : "Agenda de hoje concluída. Amanhã começa às 9h.";
+    : "Agenda de hoje concluída. Amanhã começa às 9h12.";
 
   // falhas recentes (24h)
   const erros = pubs.filter((p) => p.status === "erro" && agora - p.data < 86400_000);
   $("alerta").innerHTML = erros.length ? `<section class="alerta"><h3>${erros.length} ${erros.length === 1 ? "postagem falhou" : "postagens falharam"} nas últimas 24h</h3>${erros.slice(0, 3).map((e) => `<p><b>${hora(e.data)}</b> · ${e.tipoV === "reel" ? "Reel" : "Story"}${e.produto_id ? " do achado #" + e.produto_id : ""}: ${esc((e.detalhe || "").slice(0, 160))}</p>`).join("")}<p>O robô tenta de novo no próximo horário. Se repetir, me chame.</p></section>` : "";
+
+  // vendas (API de afiliados da Shopee)
+  desenharVendas(d.vendas || {});
 
   // números
   const midias = d.midias || [];
