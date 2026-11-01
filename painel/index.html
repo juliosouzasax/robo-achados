@@ -2,417 +2,676 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>Painel Achados</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0b">
+<title>Achados Decoded · Painel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#F4F5F7; --tinta:#16181D; --suave:#5E6470; --linha:#E2E4E9; --papel:#FFFFFF;
-  --laranja:#EE4D2D; --amarelo:#FFCD00; --verde:#1E9650; --vermelho:#C8261B;
-  --raio-grande:22px; --raio:12px;
+  --fundo:#0a0a0b; --grafite:#141416; --grafite-2:#1b1b1e; --grafite-3:#26262a;
+  --linha:rgba(232,182,76,.16); --linha-fraca:rgba(255,255,255,.07);
+  --ouro:#e8b64c; --ouro-claro:#f7d98b; --ouro-escuro:#9a7224;
+  --texto:#f4efe4; --suave:#a29c90; --apagado:#6d685f;
+  --shopee:#ee4d2d; --verde:#4cc38a; --vermelho:#ef5350;
+  --raio:18px; --raio-p:12px;
+  --nav-h:68px;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#121317; --tinta:#F1F2F4; --suave:#9AA0AB; --linha:#262830; --papel:#1A1C22;
-}}
-:root[data-theme="dark"]{--bg:#121317; --tinta:#F1F2F4; --suave:#9AA0AB; --linha:#262830; --papel:#1A1C22}
 *{box-sizing:border-box}
-html,body{margin:0}
-body{background:var(--bg);color:var(--tinta);font:16px/1.45 "Bricolage Grotesque",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+body{margin:0;background:var(--fundo);color:var(--texto);font-family:Manrope,system-ui,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(900px 500px at 85% -10%,rgba(232,182,76,.10),transparent 60%),radial-gradient(700px 400px at -10% 110%,rgba(232,182,76,.06),transparent 60%)}
 a{color:inherit}
-:focus-visible{outline:3px solid var(--amarelo);outline-offset:2px;border-radius:6px}
-.wrap{max-width:1180px;margin:0 auto;padding:28px 24px 64px}
+button{font:inherit;color:inherit}
+h1,h2,h3{margin:0;letter-spacing:-.01em}
+
+/* layout */
+.app{position:relative;display:grid;grid-template-columns:minmax(0,1fr);min-height:100vh}
+.app>*,.grade-topo>*,.grade-2>*,.grade-2b>*{min-width:0}
+.lateral{display:none}
+.conteudo{padding:16px 16px calc(var(--nav-h) + 28px + env(safe-area-inset-bottom));max-width:1240px;width:100%;margin:0 auto}
 
 /* topo */
-.topo{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.avatar{width:52px;height:52px;border-radius:50%;background:var(--laranja);object-fit:cover}
-.topo h1{margin:0;font-size:1.55rem;font-weight:800;letter-spacing:-.02em}
-.topo .sub{color:var(--suave);font-size:.95rem}
-.topo .acoes{margin-left:auto;display:flex;gap:10px;align-items:center}
-.btn{font:inherit;font-weight:600;font-size:.92rem;border:1px solid var(--linha);background:var(--papel);color:var(--tinta);padding:9px 14px;border-radius:999px;cursor:pointer;text-decoration:none}
-.btn:hover{border-color:var(--suave)}
+.topo{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.logo{width:44px;height:44px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--shopee);box-shadow:0 0 0 2px rgba(238,77,45,.25),0 6px 20px rgba(238,77,45,.25);overflow:hidden}
+.logo img{width:100%;height:100%;object-fit:cover}
+.topo .nome{min-width:0;flex:1}
+.topo h1{font-size:1.15rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topo .sub{color:var(--suave);font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acoes-topo{display:flex;gap:8px;flex:none}
+.chip{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 13px;border-radius:999px;border:1px solid var(--linha);background:var(--grafite);font-size:.84rem;font-weight:600;text-decoration:none;cursor:pointer;white-space:nowrap}
+.chip:hover{border-color:rgba(232,182,76,.45)}
+.chip svg{width:16px;height:16px}
+.chip.shopee{background:var(--shopee);border-color:var(--shopee);color:#fff}
+.chip.icone{width:38px;padding:0;justify-content:center}
+.chip .rot{display:none}
+.girando svg{animation:gira 1s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
 
-/* trilho do dia (o elemento principal) */
-.dia{margin-top:28px;background:var(--tinta);color:#fff;border-radius:var(--raio-grande);padding:28px 28px 22px;position:relative;overflow:hidden}
-:root[data-theme="dark"] .dia{background:#0A0B0E}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dia{background:#0A0B0E}}
-.dia-cab{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
-.dia h2{margin:0;font-size:2.4rem;font-weight:800;letter-spacing:-.03em;line-height:1.05}
-.dia h2 span{color:var(--amarelo)}
-.dia .prox{color:#C9CDD5;font-size:1rem}
-.trilho{position:relative;height:120px;margin:34px 6px 6px}
-.trilho .eixo{position:absolute;left:0;right:0;top:60px;height:2px;background:#3A3D46}
-.trilho .agora{position:absolute;top:34px;width:2px;height:54px;background:var(--amarelo)}
-.trilho .agora::after{content:"agora";position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:.75rem;color:var(--amarelo);white-space:nowrap}
-.marco{position:absolute;top:61px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center}
-.marco i{display:block;border-radius:50%;border:2px solid #fff;background:transparent}
-.marco.t-reel i{width:22px;height:22px}
-.marco.t-story i{width:14px;height:14px}
-.marco.ok i{background:var(--laranja);border-color:var(--laranja)}
-.marco.erro i{background:var(--vermelho);border-color:#fff}
-.marco.pulado i{border-style:dashed;opacity:.6}
-.marco b{position:absolute;top:18px;font-size:.78rem;font-weight:500;color:#C9CDD5;white-space:nowrap}
-.marco.t-reel b{top:20px;color:#fff;font-weight:600}
-.marco em{position:absolute;bottom:18px;font-style:normal;font-size:.72rem;color:#8E94A0;white-space:nowrap}
-.horas{display:flex;justify-content:space-between;color:#6E7480;font-size:.75rem;margin:0 6px}
-.legenda{display:flex;gap:18px;flex-wrap:wrap;margin-top:16px;color:#C9CDD5;font-size:.85rem}
-.legenda span{display:inline-flex;align-items:center;gap:7px}
-.legenda i{display:inline-block;border-radius:50%;width:11px;height:11px;border:2px solid #fff}
-.legenda .l-ok{background:var(--laranja);border-color:var(--laranja)}
-.legenda .l-erro{background:var(--vermelho)}
+/* cartões */
+.cartao{background:linear-gradient(180deg,var(--grafite-2),var(--grafite));border:1px solid var(--linha);border-radius:var(--raio);padding:16px}
+.cab{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.cab h2{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:9px}
+.cab h2 svg{width:19px;height:19px;color:var(--ouro);flex:none}
+.cab .extra{color:var(--suave);font-size:.8rem}
+.nota{color:var(--apagado);font-size:.78rem;margin:10px 0 0}
+.secao{margin-top:14px}
+.titulo-secao{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ouro);margin:26px 2px 10px}
 
-/* números */
-.numeros{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:22px;background:var(--papel);border:1px solid var(--linha);border-radius:var(--raio-grande)}
-.num{padding:20px 22px;border-left:1px solid var(--linha)}
-.num:first-child{border-left:0}
-.num strong{display:block;font-size:2rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
-.num span{color:var(--suave);font-size:.9rem}
+/* herói */
+.heroi{position:relative;overflow:hidden;border-color:rgba(232,182,76,.38);background:radial-gradient(120% 140% at 100% 0%,rgba(232,182,76,.20),transparent 55%),linear-gradient(180deg,#1d1a14,#121112)}
+.heroi .rot{color:var(--ouro-claro);font-size:.86rem;font-weight:600}
+.heroi .valor{font-size:clamp(2.4rem,9vw,3.4rem);font-weight:800;letter-spacing:-.03em;line-height:1.05;margin:4px 0 10px;background:linear-gradient(180deg,#fff7e2,var(--ouro-claro) 55%,var(--ouro));-webkit-background-clip:text;background-clip:text;color:transparent}
+.heroi .linha-delta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.84rem;color:var(--suave)}
+.delta{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-weight:700;font-size:.8rem}
+.delta.sobe{background:rgba(76,195,138,.15);color:var(--verde)}
+.delta.desce{background:rgba(239,83,80,.15);color:var(--vermelho)}
+.delta.neutro{background:rgba(255,255,255,.07);color:var(--suave)}
+.heroi .divide{display:flex;gap:18px;margin-top:14px;padding-top:12px;border-top:1px solid var(--linha-fraca);font-size:.82rem;color:var(--suave)}
+.heroi .divide b{display:block;color:var(--texto);font-size:1rem}
+.heroi .spark{position:absolute;right:0;bottom:0;width:55%;height:62%;opacity:.95;pointer-events:none}
 
-/* grade */
-.grade{display:grid;grid-template-columns:1.65fr 1fr;gap:22px;margin-top:22px;align-items:start}
-.bloco{background:var(--papel);border:1px solid var(--linha);border-radius:var(--raio-grande);padding:22px}
-.bloco h3{margin:0 0 4px;font-size:1.2rem;font-weight:700;letter-spacing:-.01em}
-.bloco .nota{color:var(--suave);font-size:.88rem;margin:0 0 16px}
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+.kpi{background:linear-gradient(180deg,var(--grafite-2),var(--grafite));border:1px solid var(--linha);border-radius:var(--raio-p);padding:12px 13px;display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center}
+.kpi svg{width:26px;height:26px;color:var(--ouro);grid-row:span 2}
+.kpi strong{font-size:1.35rem;font-weight:800;line-height:1.1}
+.kpi span{color:var(--suave);font-size:.76rem;line-height:1.25}
+.kpi em{grid-column:2;font-style:normal;font-size:.72rem;margin-top:3px}
+.kpi em.sobe{color:var(--verde)} .kpi em.desce{color:var(--vermelho)} .kpi em.neutro{color:var(--apagado)}
+
+/* alerta */
+.alerta{margin-top:12px;border:1px solid rgba(239,83,80,.5);background:rgba(239,83,80,.08);border-radius:var(--raio-p);padding:12px 14px;font-size:.86rem}
+.alerta b{color:#ff8a87}
+.alerta p{margin:4px 0 0;color:var(--suave)}
+
+/* linha do dia */
+.dia-resumo{color:var(--suave);font-size:.82rem;margin:-6px 0 6px}
+.dia-resumo b{color:var(--texto)}
+.trilho-caixa{margin:0 -4px}
+.trilho{position:relative;height:84px}
+.trilho::before{content:"";position:absolute;left:0;right:0;top:52px;height:2px;background:linear-gradient(90deg,var(--grafite-3),rgba(232,182,76,.35),var(--grafite-3));border-radius:2px}
+.marco{position:absolute;top:52px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center}
+.marco i{display:block;width:14px;height:14px;border-radius:50%;border:2px solid #cfc8ba;background:var(--fundo)}
+.marco.t-story i{width:9px;height:9px}
+.marco.falta i{border-style:dashed;border-color:var(--apagado);background:transparent}
+.marco.falta b{color:var(--apagado)}
+.marco.ok i{background:var(--ouro);border-color:var(--ouro-claro);box-shadow:0 0 12px rgba(232,182,76,.7)}
+.marco.erro i{background:var(--vermelho);border-color:#ff9c99;box-shadow:0 0 10px rgba(239,83,80,.6)}
+.marco b{position:absolute;top:13px;font-size:clamp(.62rem,2.6vw,.74rem);font-weight:700;white-space:nowrap;color:var(--texto)}
+.marco.agendado b{color:var(--suave);font-weight:600}
+.marco em{position:absolute;bottom:13px;font-style:normal;font-size:.68rem;color:var(--ouro-claro);white-space:nowrap}
+.agora{position:absolute;top:22px;bottom:32px;width:2px;background:var(--ouro);transform:translateX(-50%);box-shadow:0 0 10px var(--ouro)}
+.agora span{position:absolute;top:-4px;left:50%;transform:translate(-50%,-100%);background:var(--ouro);color:#1a1405;font-size:.66rem;font-weight:800;padding:2px 7px;border-radius:6px;white-space:nowrap}
+.legenda{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;color:var(--suave);font-size:.74rem}
+.legenda span{display:inline-flex;align-items:center;gap:6px}
+.legenda i{width:9px;height:9px;border-radius:50%;display:inline-block;border:2px solid #cfc8ba}
+.legenda .l-ok{background:var(--ouro);border-color:var(--ouro-claro)}
+.legenda .l-erro{background:var(--vermelho);border-color:#ff9c99}
+.legenda .l-falta{border-style:dashed;border-color:var(--apagado)}
+
+/* semana */
+.semana{display:grid;grid-template-columns:62px repeat(6,1fr) 44px;gap:6px 4px;align-items:center;font-size:.72rem;margin-top:16px}
+.semana .h{color:var(--apagado);text-align:center;font-weight:600}
+.semana .d{color:var(--suave);font-weight:600;white-space:nowrap}
+.semana .d.hoje{color:var(--ouro-claro)}
+.semana .c{height:26px;border-radius:8px;display:grid;place-items:center;font-size:.7rem;font-weight:700}
+.c.ok{background:linear-gradient(180deg,var(--ouro-claro),var(--ouro));color:#1a1405}
+.c.erro{background:rgba(239,83,80,.2);color:#ff8a87;border:1px solid rgba(239,83,80,.5)}
+.c.falta{border:1px dashed var(--grafite-3);color:var(--apagado)}
+.c.agendado{border:1px solid var(--grafite-3);color:var(--suave)}
+.c.fora{background:transparent}
+.semana .st{color:var(--suave);text-align:center}
+
+/* funil */
+.funil{display:grid;gap:7px}
+.etapa{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:linear-gradient(90deg,rgba(232,182,76,.32),rgba(232,182,76,.08));border:1px solid rgba(232,182,76,.28);margin:0 auto;width:var(--w,100%);min-width:62%}
+.etapa svg{width:18px;height:18px;color:var(--ouro-claro);flex:none}
+.etapa strong{font-size:1.05rem;font-weight:800}
+.etapa span{color:var(--suave);font-size:.8rem;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.etapa small{font-weight:700;color:var(--ouro-claro);font-size:.78rem}
+
+/* lista de pedidos */
+.pedidos{list-style:none;margin:0;padding:0}
+.pedidos li{display:grid;grid-template-columns:44px 1fr auto;gap:4px 12px;align-items:center;padding:11px 0;border-top:1px solid var(--linha-fraca)}
+.pedidos li:first-child{border-top:0;padding-top:2px}
+.miniatura{width:44px;height:44px;border-radius:10px;background:var(--grafite-3) center/cover no-repeat;grid-row:span 2;border:1px solid var(--linha-fraca)}
+.pedidos .nome-it{font-size:.88rem;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pedidos .meta{color:var(--apagado);font-size:.75rem;grid-column:2}
+.pedidos .valor-it{font-weight:800;text-align:right;white-space:nowrap}
+.pedidos .status-it{grid-column:3;justify-self:end}
+.pill{font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;border:1px solid}
+.pill.pendente{color:var(--ouro-claro);border-color:rgba(232,182,76,.5);background:rgba(232,182,76,.08)}
+.pill.concluida{color:var(--verde);border-color:rgba(76,195,138,.5);background:rgba(76,195,138,.08)}
+.pill.cancelada{color:#ff8a87;border-color:rgba(239,83,80,.5);background:rgba(239,83,80,.08)}
+.vazio{color:var(--apagado);font-size:.86rem;padding:10px 0}
+.ver-mais{display:block;width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px solid var(--linha);background:transparent;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--ouro-claro)}
+
+/* ranking */
+.ranking{list-style:none;margin:0;padding:0;counter-reset:r}
+.ranking li{display:grid;grid-template-columns:22px 44px 1fr auto;gap:2px 10px;align-items:center;padding:10px 0;border-top:1px solid var(--linha-fraca)}
+.ranking li:first-child{border-top:0;padding-top:2px}
+.ranking li::before{counter-increment:r;content:counter(r);color:var(--apagado);font-weight:800;font-size:.82rem;grid-row:span 2;text-align:center}
+.ranking li.vende::before{color:var(--ouro)}
+.ranking .miniatura{grid-row:span 2}
+.ranking .nome-it{font-size:.86rem;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ranking .meta{grid-column:3;color:var(--apagado);font-size:.74rem}
+.ranking .valor-it{grid-row:span 2;text-align:right;font-weight:800;white-space:nowrap}
+.ranking .valor-it small{display:block;font-size:.7rem;color:var(--suave);font-weight:600}
 
 /* reels */
-.reels{display:flex;flex-direction:column}
-.reel{display:grid;grid-template-columns:62px 1fr auto;gap:14px;align-items:center;padding:12px 0;border-top:1px solid var(--linha);text-decoration:none}
-.reel:first-child{border-top:0;padding-top:0}
-.reel img{width:62px;height:88px;object-fit:cover;border-radius:10px;background:var(--linha)}
-.reel .tit{font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.reel .quando{color:var(--suave);font-size:.84rem;margin-top:3px}
-.met{display:grid;grid-template-columns:repeat(5,minmax(46px,auto));gap:4px 14px;text-align:right}
-.met div{font-weight:700;font-size:1.05rem}
-.met small{display:block;font-weight:400;color:var(--suave);font-size:.72rem}
-.met .destaque{background:var(--amarelo);color:#16181D;border-radius:6px;padding:0 6px}
-.met .destaque small{color:#3b3b3b}
+.reels{display:grid;grid-auto-flow:column;grid-auto-columns:42%;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:0 16px 4px;scrollbar-width:none}
+.reels::-webkit-scrollbar{display:none}
+.reel{scroll-snap-align:start;text-decoration:none;border-radius:14px;overflow:hidden;border:1px solid var(--linha-fraca);background:var(--grafite);display:flex;flex-direction:column}
+.reel .capa{aspect-ratio:9/13;background:var(--grafite-3) center/cover no-repeat;position:relative}
+.reel .capa span{position:absolute;left:8px;bottom:8px;display:inline-flex;align-items:center;gap:4px;font-size:.74rem;font-weight:800;background:rgba(0,0,0,.65);padding:3px 8px;border-radius:999px}
+.reel .capa span svg{width:12px;height:12px}
+.reel .capa .vend{left:auto;right:8px;background:var(--ouro);color:#1a1405}
+.reel .info{padding:8px 10px 10px;font-size:.74rem;color:var(--suave)}
+.reel .info b{display:block;color:var(--texto);font-size:.8rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* barras 14 dias */
-.barras{display:flex;align-items:flex-end;gap:6px;height:120px;margin-top:6px}
-.barra{flex:1;display:flex;flex-direction:column-reverse;gap:2px;min-width:0}
-.barra i{display:block;border-radius:4px 4px 2px 2px}
-.barra .b-reel{background:var(--laranja)}
-.barra .b-story{background:var(--amarelo)}
-.barra .b-erro{background:var(--vermelho)}
-.dias{display:flex;gap:6px;margin-top:6px}
-.dias span{flex:1;text-align:center;font-size:.68rem;color:var(--suave)}
+/* barras */
+.barras{display:flex;align-items:flex-end;gap:5px;height:110px;margin-top:6px}
+.barras div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;position:relative}
+.barras i{display:block;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,var(--ouro-claro),var(--ouro-escuro));min-height:3px}
+.barras div.hoje i{background:linear-gradient(180deg,#fff2c9,var(--ouro))}
+.barras-rot{display:flex;gap:5px;margin-top:6px}
+.barras-rot span{flex:1;text-align:center;color:var(--apagado);font-size:.64rem}
 
 /* fila */
 .fila{list-style:none;margin:0;padding:0}
-.fila li{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--linha)}
-.fila li:first-child{border-top:0}
-.fila img{width:44px;height:44px;border-radius:10px;object-fit:cover;background:var(--linha)}
-.fila .n{color:var(--laranja);font-weight:800;margin-right:6px}
-.fila .p{font-weight:600;white-space:nowrap}
-.fila .q{color:var(--suave);font-size:.8rem}
-.fila li.vez{background:linear-gradient(90deg,color-mix(in srgb,var(--amarelo) 22%,transparent),transparent);border-radius:10px;padding-left:8px;margin-left:-8px}
+.fila li{display:grid;grid-template-columns:44px 1fr auto;gap:2px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--linha-fraca)}
+.fila li:first-child{border-top:0;padding-top:2px}
+.fila .miniatura{grid-row:span 2}
+.fila .nome-it{font-size:.86rem;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fila .meta{grid-column:2;color:var(--apagado);font-size:.74rem}
+.fila .tag{grid-row:span 2;font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:999px;border:1px solid var(--linha);color:var(--suave);white-space:nowrap}
+.fila .tag.novo{color:var(--ouro-claro);border-color:rgba(232,182,76,.5)}
+.fila li.vez .nome-it{color:var(--ouro-claro)}
+.mini-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.mini-kpis div{border:1px solid var(--linha-fraca);border-radius:10px;padding:9px 10px;background:rgba(255,255,255,.02)}
+.mini-kpis b{display:block;font-size:1.15rem;font-weight:800}
+.mini-kpis span{font-size:.72rem;color:var(--suave)}
 
-/* vendas */
-.vendas{margin-top:22px}
-.vendas-cab{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.vendas .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:14px 0 6px;border:1px solid var(--linha);border-radius:var(--raio)}
-.vendas .kpi{padding:14px 16px;border-left:1px solid var(--linha)}
-.vendas .kpi:first-child{border-left:0}
-.vendas .kpi strong{display:block;font-size:1.6rem;font-weight:800;letter-spacing:-.02em}
-.vendas .kpi strong.dinheiro{color:var(--verde)}
-.vendas .kpi span{color:var(--suave);font-size:.85rem}
-.pedidos{list-style:none;margin:10px 0 0;padding:0}
-.pedidos li{display:grid;grid-template-columns:130px 1fr auto auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--linha);font-size:.93rem}
-.pedidos li:first-child{border-top:0}
-.pedidos .qd{color:var(--suave);font-size:.84rem;white-space:nowrap}
-.pedidos .it{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pedidos .cm{font-weight:700;white-space:nowrap}
-.pill{font-size:.75rem;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
-.pill.pendente{background:color-mix(in srgb,var(--amarelo) 35%,transparent)}
-.pill.concluida{background:color-mix(in srgb,var(--verde) 22%,transparent);color:var(--verde)}
-.pill.cancelada{background:color-mix(in srgb,var(--vermelho) 15%,transparent);color:var(--vermelho)}
-@media (max-width:700px){
-  .vendas .kpis{grid-template-columns:repeat(2,1fr)}
-  .vendas .kpi:nth-child(3){border-left:0}
-  .vendas .kpi:nth-child(n+3){border-top:1px solid var(--linha)}
-  .pedidos li{grid-template-columns:1fr auto;}
-  .pedidos .qd{grid-column:1/-1}
-}
-.alerta{margin-top:22px;border:2px solid var(--vermelho);border-radius:var(--raio-grande);padding:18px 22px;background:color-mix(in srgb,var(--vermelho) 7%,var(--papel))}
-.alerta h3{margin:0 0 6px;color:var(--vermelho)}
-.alerta p{margin:4px 0;font-size:.92rem}
-.vazio{color:var(--suave);padding:18px 0}
-.carregando{color:var(--suave);padding:60px 0;text-align:center}
-.rodape{margin-top:28px;color:var(--suave);font-size:.84rem}
+.rodape{color:var(--apagado);font-size:.74rem;text-align:center;margin:26px 0 0}
+.esqueleto{color:var(--apagado);font-size:.86rem}
 
-@media (max-width:900px){
-  .grade{grid-template-columns:1fr}
-  .numeros{grid-template-columns:repeat(2,1fr)}
-  .num:nth-child(3){border-left:0}
-  .num:nth-child(n+3){border-top:1px solid var(--linha)}
-  .met{grid-template-columns:repeat(3,auto)}
-  .met .so-largo{display:none}
+/* navegação inferior (celular) */
+.nav-baixo{position:fixed;left:0;right:0;bottom:0;z-index:20;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(12,12,13,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--linha);display:grid;grid-template-columns:repeat(5,1fr)}
+.nav-baixo a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-decoration:none;color:var(--apagado);font-size:.68rem;font-weight:700}
+.nav-baixo a svg{width:22px;height:22px}
+.nav-baixo a.ativo{color:var(--ouro)}
+
+/* telas maiores */
+@media (min-width:640px){
+  .chip .rot{display:inline}
+  .kpis{grid-template-columns:repeat(4,1fr)}
+  .reels{grid-auto-columns:23%}
 }
-@media (max-width:560px){
-  .wrap{padding:18px 16px 48px}
-  .dia{padding:22px 16px 18px}
-  .dia h2{font-size:1.8rem}
-  .marco b,.marco em{display:none}
-  .reel{grid-template-columns:52px 1fr}
-  .reel img{width:52px;height:74px}
-  .met{grid-column:1/-1;justify-content:start;text-align:left}
+@media (min-width:1024px){
+  body{font-size:15px}
+  .app{grid-template-columns:232px minmax(0,1fr)}
+  .lateral{display:flex;flex-direction:column;position:sticky;top:0;height:100vh;padding:26px 16px;border-right:1px solid var(--linha);background:linear-gradient(180deg,#0f0f10,#0b0b0c)}
+  .lateral .marca{display:flex;align-items:center;gap:11px;padding:0 8px 26px}
+  .lateral .marca b{font-size:1.02rem;font-weight:800;line-height:1.15}
+  .lateral nav{display:grid;gap:4px}
+  .lateral nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:11px;text-decoration:none;color:var(--suave);font-weight:600;font-size:.9rem}
+  .lateral nav a svg{width:19px;height:19px}
+  .lateral nav a:hover{color:var(--texto);background:rgba(255,255,255,.03)}
+  .lateral nav a.ativo{color:#1a1405;background:linear-gradient(180deg,var(--ouro-claro),var(--ouro));box-shadow:0 6px 18px rgba(232,182,76,.25)}
+  .lateral .pe{margin-top:auto;color:var(--apagado);font-size:.74rem;padding:0 8px}
+  .nav-baixo{display:none}
+  .conteudo{padding:26px 30px 40px}
+  .topo{margin-bottom:20px}
+  .topo .logo{display:none}
+  .topo h1{font-size:1.5rem}
+  .grade-topo{display:grid;grid-template-columns:1.25fr 1fr;gap:14px;align-items:stretch}
+  .grade-topo .kpis{margin-top:0;grid-template-columns:repeat(2,1fr)}
+  .grade-topo .kpi{grid-template-columns:1fr;text-align:center;justify-items:center;padding:14px 10px}
+  .grade-topo .kpi svg{grid-row:auto;margin-bottom:6px}
+  .grade-topo .kpi em{grid-column:1}
+  .grade-2{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;align-items:start}
+  .grade-2b{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  .secao{margin-top:14px}
+  .titulo-secao{margin-top:30px}
+  .reels{grid-auto-columns:calc((100% - 30px)/4);margin:0;padding:0 0 4px}
 }
-@media (prefers-reduced-motion:no-preference){
-  .marco.ok i{animation:aparece .5s ease-out both}
-  @keyframes aparece{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+@media (min-width:1280px){
+  .grade-topo .kpis{grid-template-columns:repeat(4,1fr)}
 }
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.girando svg{animation:none}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="topo">
-    <img class="avatar" id="avatar" alt="">
-    <div>
-      <h1 id="nome">@achadosdecoded</h1>
-      <div class="sub" id="sub">Carregando…</div>
-    </div>
-    <div class="acoes">
-      <a class="btn" href="https://juliosouzasax.github.io/robo-achados/" target="_blank" rel="noopener">Ver vitrine</a>
-      <button class="btn" id="atualizar" type="button">Atualizar</button>
-    </div>
-  </header>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-casa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></symbol>
+    <symbol id="i-carrinho" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.2"/><circle cx="9.5" cy="20" r="1.3"/><circle cx="17.5" cy="20" r="1.3"/></symbol>
+    <symbol id="i-caixa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3.5 7.5v9L12 21l8.5-4.5v-9z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/></symbol>
+    <symbol id="i-pessoas" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M15.5 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c1.9.7 3.1 2.4 3.5 5.2"/></symbol>
+    <symbol id="i-olho" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-calendario" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-funil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 4.5h17l-6.5 8v6l-4 2v-8z"/></symbol>
+    <symbol id="i-estrela" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/></symbol>
+    <symbol id="i-alvo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></symbol>
+    <symbol id="i-barras" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20v-6M10 20V9M15 20v-9M20 20V5"/></symbol>
+    <symbol id="i-atualizar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6L20 8.7"/><path d="M20 3.5v5.2h-5.2"/></symbol>
+    <symbol id="i-sacola" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12.5H6z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></symbol>
+    <symbol id="i-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></symbol>
+  </defs>
+</svg>
 
-  <section class="dia" aria-labelledby="titulo-dia">
-    <div class="dia-cab">
-      <h2 id="titulo-dia">Hoje</h2>
-      <div class="prox" id="prox"></div>
+<div class="app">
+  <aside class="lateral" aria-label="Menu">
+    <div class="marca"><span class="logo"><img id="avatar-lateral" alt=""></span><b>Achados<br>Decoded</b></div>
+    <nav id="menu-lateral">
+      <a href="#painel" class="ativo"><svg><use href="#i-casa"/></svg>Painel</a>
+      <a href="#vendas"><svg><use href="#i-carrinho"/></svg>Vendas</a>
+      <a href="#conteudo"><svg><use href="#i-play"/></svg>Conteúdo</a>
+      <a href="#agenda"><svg><use href="#i-calendario"/></svg>Agenda</a>
+      <a href="#produtos"><svg><use href="#i-caixa"/></svg>Produtos</a>
+    </nav>
+    <div class="pe" id="pe-lateral"></div>
+  </aside>
+
+  <main class="conteudo">
+    <header class="topo" id="painel">
+      <span class="logo"><img id="avatar" alt=""></span>
+      <div class="nome">
+        <h1>Achados Decoded</h1>
+        <div class="sub" id="sub">Carregando…</div>
+      </div>
+      <div class="acoes-topo">
+        <button class="chip icone" id="atualizar" title="Atualizar" aria-label="Atualizar"><svg><use href="#i-atualizar"/></svg></button>
+        <a class="chip shopee" href="https://affiliate.shopee.com.br/report/conversion_report" target="_blank" rel="noopener"><svg><use href="#i-sacola"/></svg><span class="rot">Shopee</span></a>
+      </div>
+    </header>
+
+    <div class="grade-topo">
+      <section class="cartao heroi" aria-label="Comissões">
+        <div class="rot">Vendas e comissões · últimos 30 dias</div>
+        <div class="valor" id="h-valor">—</div>
+        <div class="linha-delta" id="h-delta"></div>
+        <div class="divide" id="h-divide"></div>
+        <svg class="spark" id="h-spark" viewBox="0 0 300 120" preserveAspectRatio="none" aria-hidden="true"></svg>
+      </section>
+      <div class="kpis" id="kpis"></div>
     </div>
-    <div class="trilho" id="trilho"><div class="eixo"></div></div>
-    <div class="horas"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>24h</span></div>
-    <div class="legenda">
-      <span><i class="l-ok"></i>Postado</span>
-      <span><i></i>Agendado</span>
-      <span><i class="l-erro"></i>Falhou</span>
-      <span>Bolinha grande = post no feed · pequena = Story</span>
+
+    <div id="alerta"></div>
+
+    <div class="grade-2 secao">
+      <section class="cartao" id="agenda" aria-labelledby="t-dia">
+        <div class="cab"><h2 id="t-dia"><svg><use href="#i-calendario"/></svg>Conteúdos do dia</h2><span class="extra" id="prox"></span></div>
+        <div class="dia-resumo" id="dia-resumo"></div>
+        <div class="trilho-caixa"><div class="trilho" id="trilho"></div></div>
+        <div class="legenda"><span><i class="l-ok"></i>Postado</span><span><i></i>Agendado</span><span><i class="l-erro"></i>Falhou</span><span><i class="l-falta"></i>Não saiu</span><span>Grande = Reel · pequena = Story</span></div>
+        <div class="semana" id="semana"></div>
+        <p class="nota">Semana: cada quadrado é um horário de Reel. O número é o achado que saiu.</p>
+      </section>
+      <section class="cartao" aria-labelledby="t-funil">
+        <div class="cab"><h2 id="t-funil"><svg><use href="#i-funil"/></svg>Funil de vendas</h2><span class="extra">30 dias</span></div>
+        <div class="funil" id="funil"></div>
+        <p class="nota">A % é em relação à etapa anterior. Views e alcance vêm do Instagram; pedidos, da Shopee.</p>
+      </section>
     </div>
-  </section>
 
-  <div id="alerta"></div>
-
-  <section class="numeros" id="numeros" aria-label="Resumo"></section>
-
-  <section class="bloco vendas" aria-labelledby="titulo-vendas">
-    <div class="vendas-cab">
-      <h3 id="titulo-vendas">Vendas e comissões · últimos 30 dias</h3>
-      <a class="btn" href="https://affiliate.shopee.com.br/report/conversion_report" target="_blank" rel="noopener">Abrir relatório da Shopee</a>
+    <h2 class="titulo-secao" id="vendas">Vendas</h2>
+    <div class="grade-2b">
+      <section class="cartao" aria-labelledby="t-pedidos">
+        <div class="cab"><h2 id="t-pedidos"><svg><use href="#i-carrinho"/></svg>Últimos pedidos</h2><a class="chip" href="https://affiliate.shopee.com.br/report/conversion_report" target="_blank" rel="noopener">Relatório<svg><use href="#i-seta"/></svg></a></div>
+        <ul class="pedidos" id="pedidos"><li class="esqueleto">Carregando…</li></ul>
+        <button class="ver-mais" id="ver-mais" hidden>Ver todos</button>
+        <p class="nota">Pendente vira concluída quando o cliente recebe. A Shopee paga as concluídas no dia 1 de cada mês, a partir de R$ 10.</p>
+      </section>
+      <section class="cartao" aria-labelledby="t-comissao-dia">
+        <div class="cab"><h2 id="t-comissao-dia"><svg><use href="#i-barras"/></svg>Comissão por dia</h2><span class="extra">14 dias</span></div>
+        <div class="barras" id="b-comissao"></div>
+        <div class="barras-rot" id="b-comissao-rot"></div>
+        <p class="nota" id="nota-comissao"></p>
+      </section>
     </div>
-    <div class="kpis" id="kpis"></div>
-    <p class="nota">Pendente vira concluída quando o cliente recebe o produto. A Shopee paga só as concluídas.</p>
-    <ul class="pedidos" id="pedidos"><li class="vazio">Carregando…</li></ul>
-  </section>
 
-  <div class="grade">
-    <section class="bloco">
-      <h3>Desempenho dos posts</h3>
-      <p class="nota">Últimos posts do perfil. Em amarelo, o melhor de cada métrica.</p>
-      <div class="reels" id="reels"><div class="carregando">Carregando…</div></div>
+    <h2 class="titulo-secao" id="conteudo">Conteúdo</h2>
+    <div class="grade-2b">
+      <section class="cartao" aria-labelledby="t-ranking">
+        <div class="cab"><h2 id="t-ranking"><svg><use href="#i-alvo"/></svg>O que está gerando pedidos</h2></div>
+        <ul class="ranking" id="ranking"><li class="esqueleto">Carregando…</li></ul>
+        <p class="nota">Por produto: views somadas dos Reels do achado e pedidos do mesmo produto na Shopee. A Shopee não diz de qual post veio o clique.</p>
+      </section>
+      <section class="cartao" aria-labelledby="t-alcance">
+        <div class="cab"><h2 id="t-alcance"><svg><use href="#i-pessoas"/></svg>Alcance por dia</h2><span class="extra">14 dias</span></div>
+        <div class="barras" id="b-alcance"></div>
+        <div class="barras-rot" id="b-alcance-rot"></div>
+        <div class="mini-kpis secao" id="eng"></div>
+      </section>
+    </div>
+    <section class="cartao secao" aria-labelledby="t-reels">
+      <div class="cab"><h2 id="t-reels"><svg><use href="#i-play"/></svg>Reels mais vistos</h2><span class="extra">últimos 50 posts</span></div>
+      <div class="reels" id="reels"></div>
     </section>
-    <div style="display:grid;gap:22px">
-      <section class="bloco">
-        <h3>Postagens nos últimos 14 dias</h3>
-        <p class="nota">Laranja: Reels · amarelo: Stories · vermelho: falhas</p>
-        <div class="barras" id="barras"></div>
-        <div class="dias" id="dias"></div>
-      </section>
-      <section class="bloco">
-        <h3>Próximos achados</h3>
-        <p class="nota">Ordem em que o robô vai postar.</p>
-        <ul class="fila" id="fila"></ul>
-      </section>
-    </div>
-  </div>
 
-  <p class="rodape" id="rodape"></p>
+    <h2 class="titulo-secao" id="produtos">Produtos</h2>
+    <section class="cartao" aria-labelledby="t-fila">
+      <div class="cab"><h2 id="t-fila"><svg><use href="#i-caixa"/></svg>Próximos na fila</h2></div>
+      <div class="mini-kpis" id="prod-kpis"></div>
+      <ul class="fila" id="fila"></ul>
+    </section>
+
+    <p class="rodape" id="rodape"></p>
+  </main>
 </div>
+
+<nav class="nav-baixo" id="menu-baixo" aria-label="Menu">
+  <a href="#painel" class="ativo"><svg><use href="#i-casa"/></svg>Painel</a>
+  <a href="#vendas"><svg><use href="#i-carrinho"/></svg>Vendas</a>
+  <a href="#conteudo"><svg><use href="#i-play"/></svg>Conteúdo</a>
+  <a href="#agenda"><svg><use href="#i-calendario"/></svg>Agenda</a>
+  <a href="#produtos"><svg><use href="#i-caixa"/></svg>Produtos</a>
+</nav>
 
 <script>
 const TZ = "America/Sao_Paulo";
 // Agenda do robô (horário de Brasília)
-const AGENDA = [
-  { h: 9, m: 0, tipo: "story" }, { h: 9, m: 12, tipo: "reel" }, { h: 12, m: 4, tipo: "reel" }, { h: 14, m: 30, tipo: "story" },
-  { h: 14, m: 41, tipo: "reel" }, { h: 17, m: 7, tipo: "reel" }, { h: 19, m: 18, tipo: "reel" }, { h: 20, m: 34, tipo: "reel" },
-  { h: 22, m: 45, tipo: "story" },
-];
+const REELS = [[9, 12], [12, 4], [14, 41], [17, 7], [19, 18], [20, 34]];
+const STORIES = [[9, 0], [14, 30], [22, 45]];
+const AGENDA_DESDE = "2026-10-31"; // primeiro dia com os 6 Reels
+const DIA = 86400000;
+
 const $ = (id) => document.getElementById(id);
 const fmt = new Intl.NumberFormat("pt-BR");
-const brl = (v) => "R$ " + Number(v).toFixed(2).replace(".", ",");
+const brl = (v) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const partes = (d) => Object.fromEntries(new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(d).map((p) => [p.type, p.value]));
 const diaBR = (d) => { const p = partes(d); return `${p.year}-${p.month}-${p.day}`; };
-const minutosBR = (d) => { const p = partes(d); return (+p.hour % 24) * 60 + +p.minute; };
+const minBR = (d) => { const p = partes(d); return (+p.hour % 24) * 60 + +p.minute; };
+const hhmm = (h, m) => `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 const hora = (d) => new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" }).format(d);
-const quando = (d) => new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(d);
+const quando = (d) => new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(d).replace(".", "");
+const diaCurto = (iso) => { const [, m, d] = iso.split("-"); return `${d}/${m}`; };
+const semanaRot = (iso) => new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC", weekday: "short" }).format(new Date(iso + "T12:00:00Z")).replace(".", "");
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const ic = (n) => `<svg><use href="#i-${n}"/></svg>`;
+const normal = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]/g, " ");
+const palavras = (t) => new Set(normal(t).split(/\s+/).filter((w) => w.length > 3));
 
-const STATUS = { PENDING: ["Pendente", "pendente"], COMPLETED: ["Concluída", "concluida"], CANCELLED: ["Cancelada", "cancelada"], UNPAID: ["Aguardando pagamento", "pendente"], INVALID: ["Cancelada", "cancelada"] };
-function desenharVendas(v) {
-  if (v.erro) {
-    $("kpis").innerHTML = "";
-    $("pedidos").innerHTML = `<li class="vazio">Não consegui ler as vendas da Shopee agora. Tente Atualizar em alguns minutos.</li>`;
-    return;
-  }
-  const linhas = [];
-  for (const conv of v.pedidos || []) {
-    for (const o of conv.orders || []) {
-      for (const it of o.items || []) {
-        linhas.push({ data: new Date(conv.purchaseTime * 1000), nome: it.itemName, qtd: Number(it.qty) || 1, com: Number(it.itemTotalCommission) || 0, status: o.orderStatus });
-      }
-    }
-  }
-  linhas.sort((a, b) => b.data - a.data);
-  const validas = linhas.filter((l) => !["CANCELLED", "INVALID"].includes(l.status));
-  const soma = (arr) => arr.reduce((s, l) => s + l.com, 0);
-  const pedidos = new Set();
-  for (const conv of v.pedidos || []) for (const o of conv.orders || []) if (!["CANCELLED", "INVALID"].includes(o.orderStatus)) pedidos.add(o.orderId);
-  $("kpis").innerHTML = [
-    [brl(soma(validas)), "comissão total", "dinheiro"],
-    [brl(soma(validas.filter((l) => l.status === "COMPLETED"))), "já concluída", ""],
-    [fmt.format(pedidos.size), pedidos.size === 1 ? "pedido" : "pedidos", ""],
-    [fmt.format(validas.reduce((s, l) => s + l.qtd, 0)), "itens vendidos", ""],
-  ].map(([n, r, c]) => `<div class="kpi"><strong class="${c}">${n}</strong><span>${r}</span></div>`).join("");
-  $("pedidos").innerHTML = linhas.length ? linhas.slice(0, 15).map((l) => {
-    const [rot, cls] = STATUS[l.status] || [l.status, "pendente"];
-    return `<li><span class="qd">${quando(l.data)}</span><span class="it" title="${esc(l.nome)}">${l.qtd > 1 ? l.qtd + "× " : ""}${esc(l.nome)}</span><span class="cm">${brl(l.com)}</span><span class="pill ${cls}">${rot}</span></li>`;
-  }).join("") : `<li class="vazio">Nenhuma venda nos últimos 30 dias ainda.</li>`;
+// variação: só mostra % quando a base anterior é grande o bastante para fazer sentido
+function variacao(atual, anterior, { dinheiro = false, base = 20 } = {}) {
+  if (anterior == null || atual == null) return null;
+  if (anterior === 0 && atual === 0) return { cls: "neutro", txt: "igual aos 30 dias anteriores" };
+  if (anterior === 0) return { cls: "sobe", txt: dinheiro ? "primeiras comissões" : "antes: 0" };
+  if (!dinheiro && anterior < base) return { cls: atual >= anterior ? "sobe" : "desce", txt: `antes: ${fmt.format(anterior)}` };
+  const p = Math.round(((atual - anterior) / anterior) * 100);
+  return { cls: p > 0 ? "sobe" : p < 0 ? "desce" : "neutro", txt: `${p > 0 ? "↑ +" : p < 0 ? "↓ " : ""}${p}%`, pct: true };
 }
 
+let ultimo = null, mostrarTodos = false;
+
 async function carregar() {
-  $("sub").textContent = "Atualizando…";
+  const b = $("atualizar"); b.classList.add("girando");
   try {
     const r = await fetch("/api/dados", { cache: "no-store" });
     const d = await r.json();
     if (d.erro) throw new Error(d.erro);
-    desenhar(d);
+    ultimo = d; desenhar(d);
   } catch (e) {
-    $("sub").textContent = "Não consegui carregar os dados. Tente Atualizar em alguns minutos.";
-    $("reels").innerHTML = `<div class="vazio">${esc(e.message)}</div>`;
-  }
+    $("sub").textContent = "Não consegui carregar agora. Tente de novo em alguns minutos.";
+  } finally { b.classList.remove("girando"); }
 }
 
 function desenhar(d) {
   const agora = new Date();
   const conta = d.conta || {};
-  if (conta.profile_picture_url) $("avatar").src = conta.profile_picture_url;
-  $("nome").textContent = "@" + (conta.username || "achadosdecoded");
-  $("sub").textContent = `${fmt.format(conta.followers_count ?? 0)} seguidores · ${fmt.format(conta.media_count ?? 0)} posts · atualizado às ${hora(new Date(d.gerado_em))}`;
+  for (const id of ["avatar", "avatar-lateral"]) if (conta.profile_picture_url) $(id).src = conta.profile_picture_url;
+  $("sub").textContent = `@${conta.username || "achadosdecoded"} · ${fmt.format(conta.followers_count ?? 0)} seguidores · atualizado ${hora(new Date(d.gerado_em))}`;
+  $("pe-lateral").textContent = `Atualiza sozinho a cada 5 min`;
 
-  const pubs = (d.publicacoes || []).map((p) => ({ ...p, data: new Date(p.criado_em), tipoV: p.tipo === "feed" ? "reel" : "story" }));
-  const hoje = diaBR(agora);
-  const deHoje = pubs.filter((p) => diaBR(p.data) === hoje && p.status !== "pulado");
+  const produtos = d.produtos || [];
+  const porId = Object.fromEntries(produtos.map((p) => [p.id, p]));
+  const pubs = (d.publicacoes || []).map((p) => ({ ...p, data: new Date(p.criado_em), reel: p.tipo === "feed" })).filter((p) => p.status !== "pulado");
+  const midias = (d.midias || []).map((m) => ({ ...m, data: new Date(m.timestamp), achado: Number(((m.caption || "").match(/Achado #(\d+)/) || [])[1]) || null }));
 
-  // trilho do dia
+  // ---------- vendas ----------
+  const v = d.vendas || {};
+  const linhas = [];
+  for (const conv of v.pedidos || []) for (const o of conv.orders || []) for (const it of o.items || []) {
+    linhas.push({ data: new Date(conv.purchaseTime * 1000), orderId: o.orderId, itemId: String(it.itemId), nome: it.itemName, qtd: Number(it.qty) || 1, com: Number(it.itemTotalCommission) || 0, status: o.orderStatus });
+  }
+  linhas.sort((a, b) => b.data - a.data);
+  const valida = (l) => !["CANCELLED", "INVALID"].includes(l.status);
+  // liga cada venda ao achado (pelo id do item ou pelo nome)
+  const assin = produtos.map((p) => ({ p, w: palavras(p.titulo + " " + (p.titulo_curto || "")) }));
+  for (const l of linhas) {
+    let p = produtos.find((x) => x.item_id && String(x.item_id) === l.itemId);
+    if (!p) {
+      const w = palavras(l.nome); let melhor = null, nota = 0;
+      for (const a of assin) { let c = 0; for (const x of w) if (a.w.has(x)) c++; const n = c / Math.max(1, Math.min(w.size, a.w.size)); if (c >= 2 && n > nota) { nota = n; melhor = a.p; } }
+      if (nota >= 0.5) p = melhor;
+    }
+    l.produto = p || null;
+  }
+  const em = (l, ini, fim) => l.data >= ini && l.data < fim;
+  const ini30 = new Date(agora - 30 * DIA), ini60 = new Date(agora - 60 * DIA);
+  const atual = linhas.filter((l) => valida(l) && em(l, ini30, new Date(agora.getTime() + DIA)));
+  const antes = linhas.filter((l) => valida(l) && em(l, ini60, ini30));
+  const soma = (arr) => arr.reduce((s, l) => s + l.com, 0);
+  const comAtual = soma(atual), comAntes = soma(antes);
+  const pedidosDe = (arr) => new Set(arr.map((l) => l.orderId)).size;
+  const itensDe = (arr) => arr.reduce((s, l) => s + l.qtd, 0);
+
+  $("h-valor").textContent = v.erro ? "—" : brl(comAtual);
+  const vc = variacao(comAtual, comAntes, { dinheiro: true });
+  $("h-delta").innerHTML = v.erro ? `<span class="delta neutro">Shopee fora do ar agora</span>`
+    : vc ? `<span class="delta ${vc.cls}">${esc(vc.txt)}</span><span>${vc.pct ? "vs. 30 dias anteriores" : comAntes === 0 && comAtual > 0 ? "nada nos 30 dias anteriores" : ""}</span>` : "";
+  $("h-divide").innerHTML = `<div><b>${brl(soma(atual.filter((l) => l.status === "COMPLETED")))}</b>concluída</div><div><b>${brl(soma(atual.filter((l) => l.status !== "COMPLETED")))}</b>pendente</div>`;
+
+  // sparkline da comissão acumulada em 30 dias
+  const dias30 = []; for (let i = 29; i >= 0; i--) dias30.push(diaBR(new Date(agora - i * DIA)));
+  let acum = 0; const pts = dias30.map((dia) => (acum += soma(atual.filter((l) => diaBR(l.data) === dia))));
+  const topo = Math.max(1, acum);
+  const xy = pts.map((y, i) => [(i / 29) * 300, 112 - (y / topo) * 96]);
+  const linha = xy.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  $("h-spark").innerHTML = acum ? `<defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8b64c" stop-opacity=".45"/><stop offset="1" stop-color="#e8b64c" stop-opacity="0"/></linearGradient></defs>
+    <path d="${linha} L300,120 L0,120 Z" fill="url(#g1)"/><path d="${linha}" fill="none" stroke="#f7d98b" stroke-width="2.5" vector-effect="non-scaling-stroke"/>` : "";
+
+  // kpis
+  const ins = d.insights || {}, ia = ins.atual || {}, ib = ins.anterior || {};
+  const kpi = (icone, valor, rotulo, va) => `<div class="kpi">${ic(icone)}<strong>${valor}</strong><span>${rotulo}</span>${va ? `<em class="${va.cls}">${esc(va.txt)}</em>` : ""}</div>`;
+  const viewsReels = midias.filter((m) => m.data > ini30).reduce((s, m) => s + (Number(m.views) || 0), 0);
+  $("kpis").innerHTML = [
+    kpi("carrinho", fmt.format(pedidosDe(atual)), pedidosDe(atual) === 1 ? "pedido" : "pedidos", variacao(pedidosDe(atual), pedidosDe(antes), { base: 5 })),
+    kpi("caixa", fmt.format(itensDe(atual)), "itens vendidos", variacao(itensDe(atual), itensDe(antes), { base: 5 })),
+    kpi("pessoas", ia.reach != null ? fmt.format(ia.reach) : "—", "contas alcançadas", variacao(ia.reach, ib.reach)),
+    kpi("olho", ia.views != null ? fmt.format(ia.views) : fmt.format(viewsReels), "views no perfil", variacao(ia.views, ib.views)),
+  ].join("");
+
+  // ---------- falhas ----------
+  const erros = pubs.filter((p) => p.status === "erro" && agora - p.data < DIA);
+  $("alerta").innerHTML = erros.length ? `<div class="alerta"><b>${erros.length} ${erros.length === 1 ? "postagem falhou" : "postagens falharam"} nas últimas 24h.</b>${erros.slice(0, 3).map((e) => `<p>${hora(e.data)} · ${e.reel ? "Reel" : "Story"}${e.produto_id ? " do achado #" + e.produto_id : ""}: ${esc((e.detalhe || "").slice(0, 140))}</p>`).join("")}<p>O robô tenta de novo no próximo horário.</p></div>` : "";
+
+  // ---------- dia ----------
+  const hoje = diaBR(agora), minAgora = minBR(agora);
+  const deHoje = pubs.filter((p) => diaBR(p.data) === hoje);
   const trilho = $("trilho");
-  trilho.querySelectorAll(".marco,.agora").forEach((n) => n.remove());
-  const pos = (min) => `${(min / 1440) * 100}%`;
-  const grupos = [];
-  for (const p of [...deHoje].sort((a, b) => a.data - b.data)) {
-    const m = minutosBR(p.data);
-    const g = grupos[grupos.length - 1];
-    if (g && m - g.fim <= 45) { g.itens.push(p); g.fim = m; } else grupos.push({ ini: m, fim: m, itens: [p] });
-  }
-  for (const g of grupos) {
-    const nR = g.itens.filter((p) => p.tipoV === "reel").length, nS = g.itens.length - nR;
-    const erro = g.itens.some((p) => p.status === "erro");
-    const nums = [...new Set(g.itens.map((p) => p.produto_id).filter(Boolean))].map((n) => "#" + n).join(" ");
-    const el = document.createElement("div");
-    el.className = `marco ${nR ? "t-reel" : "t-story"} ${erro ? "erro" : "ok"}`;
-    el.style.left = pos((g.ini + g.fim) / 2);
-    const desc = [nR && `${nR} ${nR > 1 ? "Reels" : "Reel"}`, nS && `${nS} ${nS > 1 ? "Stories" : "Story"}`].filter(Boolean).join(" + ");
-    el.innerHTML = `<i></i><b>${hora(g.itens[0].data)}</b>${nums ? `<em>${nums}</em>` : ""}`;
-    el.title = `${desc} às ${g.itens.map((p) => hora(p.data)).join(", ")}${erro ? " (com falha)" : ""}`;
-    trilho.appendChild(el);
-  }
-  const minAgora = minutosBR(agora);
+  trilho.innerHTML = "";
+  const feitos = deHoje.filter((p) => p.reel);
+  const slots = [...REELS.map(([h, m]) => ({ h, m, reel: true })), ...STORIES.map(([h, m]) => ({ h, m, reel: false }))]
+    .map((x) => ({ ...x, t: x.h * 60 + x.m })).sort((a, b) => a.t - b.t);
+  const usadosHoje = new Set();
+  const n = slots.length, posI = (i) => `${((i + 0.5) / n) * 100}%`;
   let proximo = null;
-  for (const a of AGENDA) {
-    const m = a.h * 60 + a.m;
-    if (m <= minAgora) continue;
-    if (!proximo) proximo = a;
+  slots.forEach((sl, i) => {
+    const p = deHoje.find((x) => x.reel === sl.reel && !usadosHoje.has(x) && minBR(x.data) >= sl.t - 20 && minBR(x.data) <= sl.t + 90);
+    let cls;
+    if (p) { usadosHoje.add(p); cls = p.status === "erro" ? "erro" : "ok"; }
+    else if (sl.t > minAgora) { cls = "agendado"; if (!proximo) proximo = sl; }
+    else cls = "falta";
     const el = document.createElement("div");
-    el.className = `marco t-${a.tipo}`;
-    el.style.left = pos(m);
-    // story colado num reel (09:00/09:12, 14:30/14:41) fica só com a bolinha, sem horário, para não encavalar
-    const colado = a.tipo === "story" && AGENDA.some((b) => b.tipo === "reel" && Math.abs(b.h * 60 + b.m - m) < 40);
-    el.innerHTML = `<i></i>${colado ? "" : `<b>${String(a.h).padStart(2, "0")}:${String(a.m).padStart(2, "0")}</b>`}`;
-    el.title = `${a.tipo === "reel" ? "Reel" : "Story"} agendado às ${String(a.h).padStart(2, "0")}:${String(a.m).padStart(2, "0")}`;
+    el.className = `marco ${sl.reel ? "t-reel" : "t-story"} ${cls}`;
+    el.style.left = posI(i);
+    el.innerHTML = `<i></i>${sl.reel ? `<b>${hhmm(sl.h, sl.m)}</b>` : ""}${p?.produto_id && sl.reel ? `<em>#${p.produto_id}</em>` : ""}`;
+    el.title = `${sl.reel ? "Reel" : "Story"} ${hhmm(sl.h, sl.m)} · ${{ ok: "postado" + (p?.produto_id ? " (achado #" + p.produto_id + ")" : ""), erro: "falhou", agendado: "agendado", falta: "não saiu" }[cls]}`;
     trilho.appendChild(el);
-  }
-  const ag = document.createElement("div"); ag.className = "agora"; ag.style.left = pos(minAgora); trilho.appendChild(ag);
-
-  const reelsHoje = deHoje.filter((p) => p.tipoV === "reel" && p.status === "ok").length;
-  const storiesHoje = deHoje.filter((p) => p.tipoV === "story" && p.status === "ok").length;
-  $("titulo-dia").innerHTML = `Hoje: <span>${reelsHoje}</span> ${reelsHoje === 1 ? "post" : "posts"} e <span>${storiesHoje}</span> ${storiesHoje === 1 ? "Story" : "Stories"}`;
-  $("prox").textContent = proximo
-    ? `Próximo: ${proximo.tipo === "reel" ? "Reel" : "Story"} às ${String(proximo.h).padStart(2, "0")}:${String(proximo.m).padStart(2, "0")}`
-    : "Agenda de hoje concluída. Amanhã começa às 9h12.";
-
-  // falhas recentes (24h)
-  const erros = pubs.filter((p) => p.status === "erro" && agora - p.data < 86400_000);
-  $("alerta").innerHTML = erros.length ? `<section class="alerta"><h3>${erros.length} ${erros.length === 1 ? "postagem falhou" : "postagens falharam"} nas últimas 24h</h3>${erros.slice(0, 3).map((e) => `<p><b>${hora(e.data)}</b> · ${e.tipoV === "reel" ? "Reel" : "Story"}${e.produto_id ? " do achado #" + e.produto_id : ""}: ${esc((e.detalhe || "").slice(0, 160))}</p>`).join("")}<p>O robô tenta de novo no próximo horário. Se repetir, me chame.</p></section>` : "";
-
-  // vendas (API de afiliados da Shopee)
-  desenharVendas(d.vendas || {});
-
-  // números
-  const midias = d.midias || [];
-  const sete = midias.filter((m) => agora - new Date(m.timestamp) < 7 * 86400_000);
-  const soma = (arr, k) => arr.reduce((s, m) => s + (Number(m[k]) || 0), 0);
-  const okSemana = pubs.filter((p) => p.status === "ok" && agora - p.data < 7 * 86400_000).length;
-  const naFila = (d.produtos || []).filter((p) => p.ativo).length;
-  $("numeros").innerHTML = [
-    [fmt.format(soma(sete, "views")), "views dos Reels em 7 dias"],
-    [fmt.format(soma(sete, "reach")), "contas alcançadas em 7 dias"],
-    [fmt.format(soma(sete, "saved") + soma(sete, "shares")), "salvamentos + compartilhamentos"],
-    [fmt.format(okSemana), `postagens em 7 dias · ${naFila} achados ativos`],
-  ].map(([v, l]) => `<div class="num"><strong>${v}</strong><span>${l}</span></div>`).join("");
-
-  // reels
-  const campos = [["views", "views"], ["reach", "alcance"], ["like_count", "curtidas"], ["saved", "salvos"], ["shares", "compart."]];
-  const max = Object.fromEntries(campos.map(([k]) => [k, Math.max(0, ...midias.map((m) => Number(m[k]) || 0))]));
-  $("reels").innerHTML = midias.length ? midias.slice(0, 12).map((m) => {
-    const tit = (m.caption || "").split("\n")[0].replace(/[\u{1F300}-\u{1FAFF}]/gu, "").trim() || "Post";
-    const thumb = m.thumbnail_url || m.media_url || "";
-    const cel = (k, rot, i) => {
-      const v = m[k]; const top = max[k] > 0 && Number(v) === max[k];
-      return `<div class="${top ? "destaque" : ""} ${i >= 3 ? "so-largo" : ""}">${v == null ? "–" : fmt.format(v)}<small>${rot}</small></div>`;
-    };
-    return `<a class="reel" href="${esc(m.permalink)}" target="_blank" rel="noopener">
-      <img src="${esc(thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer">
-      <div><div class="tit">${esc(tit)}</div><div class="quando">${m.media_product_type === "REELS" ? "Reel" : "Post"} · ${quando(new Date(m.timestamp))}</div></div>
-      <div class="met">${campos.map(([k, r], i) => cel(k, r, i)).join("")}</div>
-    </a>`;
-  }).join("") : `<div class="vazio">Nenhum post ainda. O primeiro sai no próximo horário da agenda.</div>`;
-
-  // barras 14 dias
-  const dias = [];
-  for (let i = 13; i >= 0; i--) dias.push(diaBR(new Date(agora - i * 86400_000)));
-  const porDia = dias.map((dia) => {
-    const ps = pubs.filter((p) => diaBR(p.data) === dia);
-    return { dia, reel: ps.filter((p) => p.tipoV === "reel" && p.status === "ok").length, story: ps.filter((p) => p.tipoV === "story" && p.status === "ok").length, erro: ps.filter((p) => p.status === "erro").length };
   });
-  const teto = Math.max(6, ...porDia.map((x) => x.reel + x.story + x.erro));
-  const alt = (n) => `${(n / teto) * 100}%`;
-  $("barras").innerHTML = porDia.map((x) => `<div class="barra" style="height:100%" title="${x.dia.split("-").reverse().slice(0, 2).join("/")}: ${x.reel} Reels, ${x.story} Stories${x.erro ? ", " + x.erro + " falhas" : ""}">
-      ${x.reel ? `<i class="b-reel" style="height:${alt(x.reel)}"></i>` : ""}${x.story ? `<i class="b-story" style="height:${alt(x.story)}"></i>` : ""}${x.erro ? `<i class="b-erro" style="height:${alt(x.erro)}"></i>` : ""}
-    </div>`).join("");
-  $("dias").innerHTML = porDia.map((x, i) => `<span>${i % 2 === 1 ? x.dia.slice(8) : ""}</span>`).join("");
+  // marcador "agora" entre os horários
+  let k = slots.findIndex((sl) => sl.t > minAgora);
+  let frac;
+  if (k === -1) frac = n - 0.5 + 0.45;
+  else if (k === 0) frac = 0.5 - 0.45;
+  else frac = (k - 1) + 0.5 + (minAgora - slots[k - 1].t) / (slots[k].t - slots[k - 1].t);
+  const ag = document.createElement("div"); ag.className = "agora"; ag.style.left = `${(frac / n) * 100}%`; ag.innerHTML = `<span>Agora</span>`; trilho.appendChild(ag);
+  const nR = feitos.filter((p) => p.status === "ok").length, nS = deHoje.filter((p) => !p.reel && p.status === "ok").length;
+  $("dia-resumo").innerHTML = `<b>${nR}</b> ${nR === 1 ? "Reel" : "Reels"} e <b>${nS}</b> ${nS === 1 ? "Story" : "Stories"} hoje`;
+  $("prox").textContent = proximo ? `Próximo: ${proximo.reel ? "Reel" : "Story"} às ${hhmm(proximo.h, proximo.m)}` : "Amanhã às 09:00";
 
-  // fila
-  const fila = (d.produtos || []).filter((p) => p.ativo).slice(0, 6);
-  $("fila").innerHTML = fila.map((p, i) => `<li class="${i === 0 ? "vez" : ""}">
-      <img src="${esc(p.imagem_url)}" alt="" loading="lazy" referrerpolicy="no-referrer">
-      <div><span class="n">#${p.id}</span>${esc(p.titulo_curto || p.titulo)}<div class="q">${i === 0 ? "É o próximo" : p.usado_feed_em ? "Já saiu em " + quando(new Date(p.usado_feed_em)) : "Ainda não postado"}</div></div>
-      <span class="p">${brl(p.preco)}</span></li>`).join("");
+  // ---------- semana ----------
+  const dias7 = []; for (let i = 6; i >= 0; i--) dias7.push(diaBR(new Date(agora - i * DIA)));
+  let sem = `<span></span>${REELS.map(([h, m]) => `<span class="h">${hhmm(h, m)}</span>`).join("")}<span class="h">Story</span>`;
+  for (const dia of dias7) {
+    const doDia = pubs.filter((p) => diaBR(p.data) === dia);
+    const usados = new Set();
+    sem += `<span class="d ${dia === hoje ? "hoje" : ""}">${dia === hoje ? "Hoje" : semanaRot(dia) + " " + diaCurto(dia)}</span>`;
+    for (const [h, m] of REELS) {
+      const t = h * 60 + m;
+      const p = doDia.find((x) => x.reel && !usados.has(x) && minBR(x.data) >= t - 20 && minBR(x.data) <= t + 90);
+      let cls, txt = "";
+      if (p) { usados.add(p); cls = p.status === "erro" ? "erro" : "ok"; txt = p.status === "erro" ? "!" : (p.produto_id ? "#" + p.produto_id : "✓"); }
+      else if (dia < AGENDA_DESDE) cls = "fora";
+      else if (dia === hoje && t > minAgora) cls = "agendado";
+      else { cls = "falta"; txt = "–"; }
+      const tit = p ? `${hhmm(h, m)} · ${p.status === "erro" ? "falhou" : "achado #" + (p.produto_id ?? "?")}` : cls === "agendado" ? `${hhmm(h, m)} · agendado` : cls === "falta" ? `${hhmm(h, m)} · não saiu` : "";
+      sem += `<span class="c ${cls}" title="${esc(tit)}">${txt}</span>`;
+    }
+    sem += `<span class="st">${doDia.filter((p) => !p.reel && p.status === "ok").length}</span>`;
+  }
+  $("semana").innerHTML = sem;
 
-  $("rodape").textContent = "Vendas e comissões aparecem aqui quando a Shopee liberar a API de afiliados. Até lá, veja em affiliate.shopee.com.br › Relatórios.";
+  // ---------- funil ----------
+  const etapas = [
+    ["olho", ia.views, "views"],
+    ["pessoas", ia.reach, "contas alcançadas"],
+    ["estrela", ia.accounts_engaged, "contas que interagiram"],
+    ["carrinho", pedidosDe(atual), "pedidos"],
+    ["caixa", itensDe(atual), "itens vendidos"],
+  ].filter((e) => e[1] != null);
+  $("funil").innerHTML = etapas.map(([icone, n, rot], i) => {
+    const ant = i ? etapas[i - 1][1] : null;
+    if (rot === "itens vendidos") return `<div class="etapa" style="--w:${100 - i * 7}%">${ic(icone)}<strong>${fmt.format(n)}</strong><span>${rot}</span><small>${ant ? (n / ant).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + " por pedido" : ""}</small></div>`;
+    const pct = i === 0 ? "100%" : ant ? ((n / ant) * 100).toLocaleString("pt-BR", { maximumFractionDigits: n / ant < 0.1 ? 1 : 0 }) + "%" : "—";
+    return `<div class="etapa" style="--w:${100 - i * 7}%">${ic(icone)}<strong>${fmt.format(n)}</strong><span>${rot}</span><small>${pct}</small></div>`;
+  }).join("") || `<div class="vazio">Sem dados do Instagram agora.</div>`;
+
+  // ---------- pedidos ----------
+  const STATUS = { PENDING: ["Pendente", "pendente"], COMPLETED: ["Concluída", "concluida"], CANCELLED: ["Cancelada", "cancelada"], UNPAID: ["Aguardando", "pendente"], INVALID: ["Cancelada", "cancelada"] };
+  const lista = linhas.filter((l) => l.data > ini30);
+  const mostra = mostrarTodos ? lista : lista.slice(0, 6);
+  $("pedidos").innerHTML = v.erro ? `<li class="vazio">Não consegui ler as vendas da Shopee agora.</li>` : mostra.length ? mostra.map((l) => {
+    const [rot, cls] = STATUS[l.status] || [l.status, "pendente"];
+    const img = l.produto?.imagem_url;
+    return `<li><span class="miniatura" style="${img ? `background-image:url('${esc(img)}')` : ""}"></span>
+      <span class="nome-it" title="${esc(l.nome)}">${l.qtd > 1 ? l.qtd + "× " : ""}${esc(l.produto?.titulo_curto || l.nome)}</span>
+      <span class="valor-it">${brl(l.com)}</span>
+      <span class="meta">${quando(l.data)}${l.produto ? " · achado #" + l.produto.id : ""}</span>
+      <span class="status-it"><span class="pill ${cls}">${rot}</span></span></li>`;
+  }).join("") : `<li class="vazio">Nenhuma venda nos últimos 30 dias ainda.</li>`;
+  $("ver-mais").hidden = lista.length <= 6 || mostrarTodos;
+  $("ver-mais").textContent = `Ver todos os ${lista.length} itens`;
+
+  // comissão por dia (14)
+  const dias14 = dias30.slice(-14);
+  const porDiaCom = dias14.map((dia) => soma(atual.filter((l) => diaBR(l.data) === dia)));
+  barras("b-comissao", "b-comissao-rot", dias14, porDiaCom, (x) => brl(x), hoje);
+  const melhorDia = Math.max(...porDiaCom);
+  $("nota-comissao").textContent = melhorDia > 0 ? `Melhor dia: ${diaCurto(dias14[porDiaCom.indexOf(melhorDia)])}, com ${brl(melhorDia)}.` : "Ainda sem comissão nos últimos 14 dias.";
+
+  // ---------- ranking por achado ----------
+  const ranking = {};
+  const linhaRank = (id) => (ranking[id] ??= { p: porId[id], views: 0, reels: 0, pedidos: new Set(), com: 0, itens: 0 });
+  for (const m of midias) if (m.achado && porId[m.achado]) { const r = linhaRank(m.achado); r.views += Number(m.views) || 0; r.reels++; }
+  for (const l of atual) if (l.produto) { const r = linhaRank(l.produto.id); r.pedidos.add(l.orderId); r.com += l.com; r.itens += l.qtd; }
+  const rank = Object.values(ranking).filter((r) => r.p).sort((a, b) => b.com - a.com || b.views - a.views).slice(0, 8);
+  const semDono = atual.filter((l) => !l.produto);
+  $("ranking").innerHTML = rank.length ? rank.map((r) => `<li class="${r.com > 0 ? "vende" : ""}">
+      <span class="miniatura" style="background-image:url('${esc(r.p.imagem_url)}')"></span>
+      <span class="nome-it">#${r.p.id} ${esc(r.p.titulo_curto || r.p.titulo)}</span>
+      <span class="valor-it">${r.com > 0 ? brl(r.com) : "—"}<small>${r.pedidos.size} ${r.pedidos.size === 1 ? "pedido" : "pedidos"}</small></span>
+      <span class="meta">${fmt.format(r.views)} views · ${r.reels} ${r.reels === 1 ? "Reel" : "Reels"}</span></li>`).join("")
+    + (semDono.length ? `<li><span class="miniatura"></span><span class="nome-it">Outros produtos da Shopee</span><span class="valor-it">${brl(soma(semDono))}<small>${pedidosDe(semDono)} ${pedidosDe(semDono) === 1 ? "pedido" : "pedidos"}</small></span><span class="meta">compraram outra coisa depois do clique</span></li>` : "")
+    : `<li class="vazio">Ainda sem dados suficientes.</li>`;
+
+  // alcance por dia
+  const serie = Object.fromEntries((ins.alcance_dia || []).map((x) => [diaBR(new Date(new Date(x.dia) - 3600000)), x.valor]));
+  barras("b-alcance", "b-alcance-rot", dias14, dias14.map((dia) => serie[dia] ?? 0), (x) => fmt.format(x) + " contas", hoje);
+  $("eng").innerHTML = [
+    [ia.total_interactions, "interações"],
+    [(ia.saves ?? 0) + (ia.shares ?? 0), "salvos + compart."],
+    [ia.profile_links_taps, "cliques no link da bio"],
+  ].map(([n, r]) => `<div><b>${n == null ? "—" : fmt.format(n)}</b><span>${r}</span></div>`).join("");
+
+  // reels mais vistos
+  const vendidos = new Set(atual.filter((l) => l.produto).map((l) => l.produto.id));
+  const top = midias.filter((m) => m.media_product_type === "REELS").sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 8);
+  $("reels").innerHTML = top.map((m) => {
+    const p = porId[m.achado];
+    return `<a class="reel" href="${esc(m.permalink)}" target="_blank" rel="noopener">
+      <div class="capa" style="background-image:url('${esc(m.thumbnail_url || "")}')"><span>${ic("play")}${fmt.format(m.views || 0)}</span>${vendidos.has(m.achado) ? `<span class="vend">vendeu</span>` : ""}</div>
+      <div class="info"><b>${esc(p?.titulo_curto || (m.caption || "").split("\n")[0].replace(/[\u{1F300}-\u{1FAFF}]/gu, "").trim() || "Reel")}</b>${quando(m.data)} · ${fmt.format(m.reach || 0)} contas</div></a>`;
+  }).join("") || `<div class="vazio">Nenhum Reel ainda.</div>`;
+
+  // ---------- produtos ----------
+  const ativos = produtos.filter((p) => p.ativo);
+  // simula a escolha do robô: alterna foto e vídeo, 48h entre os formatos do mesmo produto, garimpo primeiro
+  const ms = (x) => (x ? new Date(x).getTime() : 0);
+  const sim = ativos.filter((p) => p.ativo).map((p) => ({ p, f: ms(p.usado_feed_em), v: ms(p.usado_video_em) }))
+    .sort((a, b) => Number(!!b.p.fila) - Number(!!a.p.fila) || ms(a.p.criado_em) - ms(b.p.criado_em));
+  let querVideo = Math.max(0, ...sim.map((x) => x.v)) < Math.max(0, ...sim.map((x) => x.f));
+  const fila = [];
+  for (let k = 0; k < 6; k++) {
+    const t = agora.getTime() + k * 2 * 3600000;
+    const livre = (x) => !Math.max(x.f, x.v) || t - Math.max(x.f, x.v) >= 48 * 3600000;
+    let escolhido = null, modo = null;
+    for (const q of querVideo ? ["video", "foto"] : ["foto", "video"]) {
+      escolhido = sim.find((x) => livre(x) && (q === "video" ? x.p.video_base && !x.v : !x.f));
+      if (escolhido) { modo = q; break; }
+    }
+    if (!escolhido) break;
+    fila.push({ p: escolhido.p, modo });
+    if (modo === "video") escolhido.v = t; else escolhido.f = t;
+    querVideo = modo !== "video";
+  }
+  $("prod-kpis").innerHTML = [
+    [ativos.length, "achados ativos"],
+    [ativos.filter((p) => p.fila).length, "do garimpo"],
+    [ativos.filter((p) => p.video_base).length, "com vídeo da Shopee"],
+  ].map(([n, r]) => `<div><b>${fmt.format(n)}</b><span>${r}</span></div>`).join("");
+  $("fila").innerHTML = fila.length ? fila.map(({ p, modo }, i) => `<li class="${i === 0 ? "vez" : ""}"><span class="miniatura" style="background-image:url('${esc(p.imagem_url)}')"></span>
+      <span class="nome-it">#${p.id} ${esc(p.titulo_curto || p.titulo)}</span>
+      <span class="tag ${modo === "video" ? "novo" : ""}">${modo === "video" ? "vídeo Shopee" : "foto + narração"}</span>
+      <span class="meta">${i === 0 ? "É o próximo · " : ""}${p.fila ? "garimpo" : "catálogo"} · ${brl(p.preco)}</span></li>`).join("")
+    : `<li class="vazio">Todos os achados já saíram nos dois formatos. O robô recomeça pelos mais antigos.</li>`;
+  $("rodape").textContent = `Dados reais: vendas pela API de afiliados da Shopee, alcance e views pelo Instagram. Atualizado às ${hora(new Date(d.gerado_em))}.`;
 }
 
+function barras(idB, idR, dias, valores, rotulo, hoje) {
+  const teto = Math.max(1, ...valores);
+  $(idB).innerHTML = valores.map((x, i) => `<div class="${dias[i] === hoje ? "hoje" : ""}" title="${diaCurto(dias[i])}: ${esc(rotulo(x))}"><i style="height:${Math.max(2, (x / teto) * 100)}%;${x ? "" : "opacity:.25"}"></i></div>`).join("");
+  $(idR).innerHTML = dias.map((dia, i) => `<span>${i % 2 === dias.length % 2 ? dia.slice(8) : ""}</span>`).join("");
+}
+
+// menu: marca a seção visível
+const links = [...document.querySelectorAll("#menu-lateral a, #menu-baixo a")];
+const alvos = ["painel", "vendas", "conteudo", "agenda", "produtos"].map((id) => $(id));
+function marcar() {
+  let atual = "painel";
+  const y = window.scrollY + window.innerHeight * 0.35;
+  for (const el of alvos) if (el && el.getBoundingClientRect().top + window.scrollY <= y) atual = el.id;
+  if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) atual = "produtos";
+  for (const a of links) a.classList.toggle("ativo", a.getAttribute("href") === "#" + atual);
+}
+window.addEventListener("scroll", marcar, { passive: true });
+
+$("ver-mais").addEventListener("click", () => { mostrarTodos = true; if (ultimo) desenhar(ultimo); });
 $("atualizar").addEventListener("click", carregar);
 carregar();
 setInterval(carregar, 5 * 60 * 1000);
