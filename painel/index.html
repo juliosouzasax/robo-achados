@@ -119,9 +119,9 @@ a{color:inherit}
 .vendas .kpi strong.dinheiro{color:var(--verde)}
 .vendas .kpi span{color:var(--suave);font-size:.85rem}
 .pedidos{list-style:none;margin:10px 0 0;padding:0}
-.pedidos li{display:grid;grid-template-columns:86px 1fr auto auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--linha);font-size:.93rem}
+.pedidos li{display:grid;grid-template-columns:130px 1fr auto auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--linha);font-size:.93rem}
 .pedidos li:first-child{border-top:0}
-.pedidos .qd{color:var(--suave);font-size:.84rem}
+.pedidos .qd{color:var(--suave);font-size:.84rem;white-space:nowrap}
 .pedidos .it{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pedidos .cm{font-weight:700;white-space:nowrap}
 .pill{font-size:.75rem;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
@@ -337,8 +337,10 @@ function desenhar(d) {
     const el = document.createElement("div");
     el.className = `marco t-${a.tipo}`;
     el.style.left = pos(m);
-    el.innerHTML = `<i></i><b>${String(a.h).padStart(2, "0")}:${String(a.m).padStart(2, "0")}</b>`;
-    el.title = `${a.tipo === "reel" ? "Reel" : "Story"} agendado`;
+    // story colado num reel (09:00/09:12, 14:30/14:41) fica só com a bolinha, sem horário, para não encavalar
+    const colado = a.tipo === "story" && AGENDA.some((b) => b.tipo === "reel" && Math.abs(b.h * 60 + b.m - m) < 40);
+    el.innerHTML = `<i></i>${colado ? "" : `<b>${String(a.h).padStart(2, "0")}:${String(a.m).padStart(2, "0")}</b>`}`;
+    el.title = `${a.tipo === "reel" ? "Reel" : "Story"} agendado às ${String(a.h).padStart(2, "0")}:${String(a.m).padStart(2, "0")}`;
     trilho.appendChild(el);
   }
   const ag = document.createElement("div"); ag.className = "agora"; ag.style.left = pos(minAgora); trilho.appendChild(ag);
