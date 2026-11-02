@@ -442,7 +442,9 @@ function desenhar(d) {
 
   const produtos = d.produtos || [];
   const porId = Object.fromEntries(produtos.map((p) => [p.id, p]));
-  const pubs = (d.publicacoes || []).map((p) => ({ ...p, data: new Date(p.criado_em), reel: p.tipo === "feed" })).filter((p) => p.status !== "pulado");
+  const todas = (d.publicacoes || []).map((p) => ({ ...p, data: new Date(p.criado_em), reel: p.tipo === "feed" })).filter((p) => p.status !== "pulado");
+  const pubs = todas.filter((p) => p.tipo === "feed" || p.tipo === "story");
+  const outras = todas.filter((p) => p.tipo === "youtube" || p.tipo === "tiktok");
   const midias = (d.midias || []).map((m) => ({ ...m, data: new Date(m.timestamp), achado: Number(((m.caption || "").match(/Achado #(\d+)/) || [])[1]) || null }));
 
   // ---------- vendas ----------
@@ -536,7 +538,12 @@ function desenhar(d) {
   else frac = (k - 1) + 0.5 + (minAgora - slots[k - 1].t) / (slots[k].t - slots[k - 1].t);
   const ag = document.createElement("div"); ag.className = "agora"; ag.style.left = `${(frac / n) * 100}%`; ag.innerHTML = `<span>Agora</span>`; trilho.appendChild(ag);
   const nR = feitos.filter((p) => p.status === "ok").length, nS = deHoje.filter((p) => !p.reel && p.status === "ok").length;
-  $("dia-resumo").innerHTML = `<b>${nR}</b> ${nR === 1 ? "Reel" : "Reels"} e <b>${nS}</b> ${nS === 1 ? "Story" : "Stories"} hoje`;
+  const ytHoje = outras.filter((p) => p.tipo === "youtube" && p.status === "ok" && diaBR(p.data) === hoje).length;
+  const ttHoje = outras.filter((p) => p.tipo === "tiktok" && p.status === "ok" && diaBR(p.data) === hoje).length;
+  const errOut = outras.filter((p) => p.status === "erro" && agora - p.data < DIA);
+  $("dia-resumo").innerHTML = `<b>${nR}</b> ${nR === 1 ? "Reel" : "Reels"} e <b>${nS}</b> ${nS === 1 ? "Story" : "Stories"} hoje`
+    + (outras.length ? ` · <b>${ytHoje}</b> no YouTube · <b>${ttHoje}</b> no TikTok` : "")
+    + (errOut.length ? ` · <span style="color:var(--vermelho)">${errOut.length} falha(s) fora do Instagram</span>` : "");
   $("prox").textContent = proximo ? `Próximo: ${proximo.reel ? "Reel" : "Story"} às ${hhmm(proximo.h, proximo.m)}` : "Amanhã às 09:00";
 
   // ---------- semana ----------
