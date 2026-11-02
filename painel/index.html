@@ -194,6 +194,13 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
 .mini-kpis b{display:block;font-size:1.15rem;font-weight:800}
 .mini-kpis span{font-size:.72rem;color:var(--suave)}
 
+.origens{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.origem{border:1px solid var(--linha-fraca);border-radius:12px;padding:11px 12px;background:rgba(255,255,255,.02)}
+.origem.tem{border-color:rgba(232,182,76,.4);background:rgba(232,182,76,.06)}
+.origem b{display:block;font-size:1.1rem;font-weight:800}
+.origem span{font-size:.74rem;color:var(--suave)}
+.origem small{display:block;font-size:.7rem;color:var(--apagado);margin-top:2px}
+@media (min-width:640px){.origens{grid-template-columns:repeat(5,1fr)}}
 .rodape{color:var(--apagado);font-size:.74rem;text-align:center;margin:26px 0 0}
 .esqueleto{color:var(--apagado);font-size:.86rem}
 
@@ -334,6 +341,12 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
       </section>
     </div>
 
+    <section class="cartao secao" aria-labelledby="t-origem">
+      <div class="cab"><h2 id="t-origem"><svg><use href="#i-alvo"/></svg>De onde vieram as vendas</h2><span class="extra">30 dias</span></div>
+      <div class="origens" id="origens"></div>
+      <p class="nota">Desde 02/11 cada Reel, Story, Direct e a vitrine da bio usam um link próprio, e a Shopee devolve de onde veio cada pedido. Vendas antigas aparecem como "antes do rastreio".</p>
+    </section>
+
     <h2 class="titulo-secao" id="conteudo">Conteúdo</h2>
     <div class="grade-2b">
       <section class="cartao" aria-labelledby="t-ranking">
@@ -436,7 +449,8 @@ function desenhar(d) {
   const v = d.vendas || {};
   const linhas = [];
   for (const conv of v.pedidos || []) for (const o of conv.orders || []) for (const it of o.items || []) {
-    linhas.push({ data: new Date(conv.purchaseTime * 1000), orderId: o.orderId, itemId: String(it.itemId), nome: it.itemName, qtd: Number(it.qty) || 1, com: Number(it.itemTotalCommission) || 0, status: o.orderStatus });
+    const [canal, ref] = String(conv.utmContent || "").split("-");
+    linhas.push({ canal: canal || "", ref: ref || "", data: new Date(conv.purchaseTime * 1000), orderId: o.orderId, itemId: String(it.itemId), nome: it.itemName, qtd: Number(it.qty) || 1, com: Number(it.itemTotalCommission) || 0, status: o.orderStatus });
   }
   linhas.sort((a, b) => b.data - a.data);
   const valida = (l) => !["CANCELLED", "INVALID"].includes(l.status);
@@ -578,6 +592,13 @@ function desenhar(d) {
   $("ver-mais").hidden = lista.length <= 6 || mostrarTodos;
   $("ver-mais").textContent = `Ver todos os ${lista.length} itens`;
 
+  // origem das vendas (subIds dos links)
+  const ORIG = [["reel", "Reels"], ["story", "Stories"], ["dm", "Direct"], ["bio", "Vitrine da bio"], ["", "Antes do rastreio"]];
+  $("origens").innerHTML = ORIG.map(([k, rot]) => {
+    const ls = atual.filter((l) => (k ? l.canal === k : !ORIG.some(([c]) => c && c === l.canal)));
+    return `<div class="origem ${ls.length ? "tem" : ""}"><b>${brl(soma(ls))}</b><span>${rot}</span><small>${pedidosDe(ls)} ${pedidosDe(ls) === 1 ? "pedido" : "pedidos"}</small></div>`;
+  }).join("");
+
   // comissão por dia (14)
   const dias14 = dias30.slice(-14);
   const porDiaCom = dias14.map((dia) => soma(atual.filter((l) => diaBR(l.data) === dia)));
@@ -611,11 +632,13 @@ function desenhar(d) {
 
   // reels mais vistos
   const vendidos = new Set(atual.filter((l) => l.produto).map((l) => l.produto.id));
+  const comPorPost = {};
+  for (const l of atual) if (l.canal === "reel" && l.ref) comPorPost[l.ref] = (comPorPost[l.ref] || 0) + l.com;
   const top = midias.filter((m) => m.media_product_type === "REELS").sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 8);
   $("reels").innerHTML = top.map((m) => {
     const p = porId[m.achado];
     return `<a class="reel" href="${esc(m.permalink)}" target="_blank" rel="noopener">
-      <div class="capa" style="background-image:url('${esc(m.thumbnail_url || "")}')"><span>${ic("play")}${fmt.format(m.views || 0)}</span>${vendidos.has(m.achado) ? `<span class="vend">vendeu</span>` : ""}</div>
+      <div class="capa" style="background-image:url('${esc(m.thumbnail_url || "")}')"><span>${ic("play")}${fmt.format(m.views || 0)}</span>${comPorPost[m.id] ? `<span class="vend">${brl(comPorPost[m.id])}</span>` : vendidos.has(m.achado) ? `<span class="vend">vendeu</span>` : ""}</div>
       <div class="info"><b>${esc(p?.titulo_curto || (m.caption || "").split("\n")[0].replace(/[\u{1F300}-\u{1FAFF}]/gu, "").trim() || "Reel")}</b>${quando(m.data)} · ${fmt.format(m.reach || 0)} contas</div></a>`;
   }).join("") || `<div class="vazio">Nenhum Reel ainda.</div>`;
 
