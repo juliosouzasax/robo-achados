@@ -200,7 +200,7 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
 .origem b{display:block;font-size:1.1rem;font-weight:800}
 .origem span{font-size:.74rem;color:var(--suave)}
 .origem small{display:block;font-size:.7rem;color:var(--apagado);margin-top:2px}
-@media (min-width:640px){.origens{grid-template-columns:repeat(5,1fr)}}
+@media (min-width:640px){.origens{grid-template-columns:repeat(3,1fr)}}
 .rodape{color:var(--apagado);font-size:.74rem;text-align:center;margin:26px 0 0}
 .esqueleto{color:var(--apagado);font-size:.86rem}
 
@@ -344,7 +344,7 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
     <section class="cartao secao" aria-labelledby="t-origem">
       <div class="cab"><h2 id="t-origem"><svg><use href="#i-alvo"/></svg>De onde vieram as vendas</h2><span class="extra">30 dias</span></div>
       <div class="origens" id="origens"></div>
-      <p class="nota">Desde 02/11 cada Reel, Story, Direct e a vitrine da bio usam um link próprio, e a Shopee devolve de onde veio cada pedido. Vendas antigas aparecem como "antes do rastreio".</p>
+      <p class="nota">Desde 02/11 cada Reel, Story, Direct, a vitrine da bio e o grupo do WhatsApp usam um link próprio, e a Shopee devolve de onde veio cada pedido. Vendas antigas aparecem como "antes do rastreio".</p>
     </section>
 
     <h2 class="titulo-secao" id="conteudo">Conteúdo</h2>
@@ -444,7 +444,7 @@ function desenhar(d) {
   const porId = Object.fromEntries(produtos.map((p) => [p.id, p]));
   const todas = (d.publicacoes || []).map((p) => ({ ...p, data: new Date(p.criado_em), reel: p.tipo === "feed" })).filter((p) => p.status !== "pulado");
   const pubs = todas.filter((p) => p.tipo === "feed" || p.tipo === "story");
-  const outras = todas.filter((p) => p.tipo === "youtube" || p.tipo === "tiktok");
+  const outras = todas.filter((p) => p.tipo === "youtube" || p.tipo === "tiktok" || p.tipo === "whatsapp");
   const midias = (d.midias || []).map((m) => ({ ...m, data: new Date(m.timestamp), achado: Number(((m.caption || "").match(/Achado #(\d+)/) || [])[1]) || null }));
 
   // ---------- vendas ----------
@@ -540,9 +540,10 @@ function desenhar(d) {
   const nR = feitos.filter((p) => p.status === "ok").length, nS = deHoje.filter((p) => !p.reel && p.status === "ok").length;
   const ytHoje = outras.filter((p) => p.tipo === "youtube" && p.status === "ok" && diaBR(p.data) === hoje).length;
   const ttHoje = outras.filter((p) => p.tipo === "tiktok" && p.status === "ok" && diaBR(p.data) === hoje).length;
+  const wpHoje = outras.filter((p) => p.tipo === "whatsapp" && p.status === "ok" && diaBR(p.data) === hoje).length;
   const errOut = outras.filter((p) => p.status === "erro" && agora - p.data < DIA);
   $("dia-resumo").innerHTML = `<b>${nR}</b> ${nR === 1 ? "Reel" : "Reels"} e <b>${nS}</b> ${nS === 1 ? "Story" : "Stories"} hoje`
-    + (outras.length ? ` · <b>${ytHoje}</b> no YouTube · <b>${ttHoje}</b> no TikTok` : "")
+    + (outras.length ? ` · <b>${wpHoje}</b> no grupo do WhatsApp · <b>${ytHoje}</b> no YouTube · <b>${ttHoje}</b> no TikTok` : "")
     + (errOut.length ? ` · <span style="color:var(--vermelho)">${errOut.length} falha(s) fora do Instagram</span>` : "");
   $("prox").textContent = proximo ? `Próximo: ${proximo.reel ? "Reel" : "Story"} às ${hhmm(proximo.h, proximo.m)}` : "Amanhã às 09:00";
 
@@ -600,7 +601,7 @@ function desenhar(d) {
   $("ver-mais").textContent = `Ver todos os ${lista.length} itens`;
 
   // origem das vendas (subIds dos links)
-  const ORIG = [["reel", "Reels"], ["story", "Stories"], ["dm", "Direct"], ["bio", "Vitrine da bio"], ["", "Antes do rastreio"]];
+  const ORIG = [["reel", "Reels"], ["story", "Stories"], ["dm", "Direct"], ["bio", "Vitrine da bio"], ["wpp", "Grupo do WhatsApp"], ["", "Antes do rastreio"]];
   $("origens").innerHTML = ORIG.map(([k, rot]) => {
     const ls = atual.filter((l) => (k ? l.canal === k : !ORIG.some(([c]) => c && c === l.canal)));
     return `<div class="origem ${ls.length ? "tem" : ""}"><b>${brl(soma(ls))}</b><span>${rot}</span><small>${pedidosDe(ls)} ${pedidosDe(ls) === 1 ? "pedido" : "pedidos"}</small></div>`;
