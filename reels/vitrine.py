@@ -41,7 +41,7 @@ PAGINA = """<!doctype html>
 <html lang="pt-BR"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Achados Decoded</title>
-<meta name="description" content="Os achadinhos da Shopee do @achadosdecoded. Procure pelo número do vídeo.">
+<meta name="description" content="Os achadinhos da Shopee do @ogarimpodagabi. Procure pelo número do vídeo.">
 <style>
 :root{--laranja:#ee4d2d;--fundo:#fff7f4;--texto:#1f1f1f;--cinza:#6b6b6b;--cartao:#fff;--borda:#f1dcd5}
 @media (prefers-color-scheme:dark){:root{--fundo:#141110;--texto:#f4eeec;--cinza:#a9a09d;--cartao:#1f1a18;--borda:#332926}}
@@ -63,7 +63,7 @@ main{max-width:560px;margin:0 auto;padding:12px 16px 32px;display:grid;gap:10px}
 .vazio{text-align:center;color:var(--cinza);padding:30px 0;display:none}
 footer{text-align:center;color:var(--cinza);font-size:12px;padding:0 16px 28px;max-width:560px;margin:0 auto}
 </style></head><body>
-<header><h1>ACHADOS DA GABI</h1><p>Viu no vídeo? Procure pelo número do achado 👇</p>
+<header><h1>GARIMPO DA GABI</h1><p>Viu no vídeo? Procure pelo número do achado 👇</p>
 <a class="grupo" href="https://chat.whatsapp.com/ENU15xRGku18sDqfq3YXlt" target="_blank" rel="noopener">💬 Entrar no grupo VIP de promoções</a></header>
 <div class="busca"><input id="q" type="search" inputmode="search" placeholder="Digite o nº ou o nome (ex: 12)" autocomplete="off"></div>
 <main id="lista">

@@ -160,7 +160,7 @@ def montar(foto: Path, roteiro: Roteiro, palavras: list[Palavra], audio: Path, f
         # marca no topo
         d.rounded_rectangle((40, 60, 104, 124), radius=16, fill=LARANJA)
         d.text((56, 66), "A", font=fontes.forte(44), fill=BRANCO)
-        d.text((122, 70), "achadosdecoded", font=f_marca, fill=BRANCO)
+        d.text((122, 70), "ogarimpodagabi", font=f_marca, fill=BRANCO)
         larg_pub = d.textlength("#publi", font=f_pub)
         d.rounded_rectangle((W - 60 - larg_pub - 30, 70, W - 60, 118), radius=24, fill=(0, 0, 0, 160))
         d.text((W - 60 - larg_pub - 15, 76), "#publi", font=f_pub, fill=BRANCO)

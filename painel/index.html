@@ -437,7 +437,7 @@ function desenhar(d) {
   const agora = new Date();
   const conta = d.conta || {};
   for (const id of ["avatar", "avatar-lateral"]) if (conta.profile_picture_url) $(id).src = conta.profile_picture_url;
-  $("sub").textContent = `@${conta.username || "achadosdecoded"} · ${fmt.format(conta.followers_count ?? 0)} seguidores · atualizado ${hora(new Date(d.gerado_em))}`;
+  $("sub").textContent = `@${conta.username || "ogarimpodagabi"} · ${fmt.format(conta.followers_count ?? 0)} seguidores · atualizado ${hora(new Date(d.gerado_em))}`;
   $("pe-lateral").textContent = `Atualiza sozinho a cada 5 min`;
 
   const produtos = d.produtos || [];
