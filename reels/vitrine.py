@@ -48,6 +48,7 @@ PAGINA = """<!doctype html>
 *{box-sizing:border-box}body{margin:0;background:var(--fundo);color:var(--texto);font:16px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 header{background:var(--laranja);color:#fff;padding:28px 16px 22px;text-align:center}
 header h1{margin:0;font-size:24px;letter-spacing:.5px}header p{margin:6px 0 0;opacity:.92;font-size:14px}
+.grupo{display:inline-block;margin-top:14px;background:#25d366;color:#fff;font-weight:700;font-size:15px;text-decoration:none;padding:12px 20px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 .busca{position:sticky;top:0;background:var(--fundo);padding:12px 16px;z-index:2;border-bottom:1px solid var(--borda)}
 .busca input{width:100%;font-size:17px;padding:12px 14px;border-radius:12px;border:2px solid var(--borda);background:var(--cartao);color:var(--texto)}
 .busca input:focus{outline:none;border-color:var(--laranja)}
@@ -62,7 +63,8 @@ main{max-width:560px;margin:0 auto;padding:12px 16px 32px;display:grid;gap:10px}
 .vazio{text-align:center;color:var(--cinza);padding:30px 0;display:none}
 footer{text-align:center;color:var(--cinza);font-size:12px;padding:0 16px 28px;max-width:560px;margin:0 auto}
 </style></head><body>
-<header><h1>ACHADOS DECODED</h1><p>Viu no vídeo? Procure pelo número do achado 👇</p></header>
+<header><h1>ACHADOS DA GABI</h1><p>Viu no vídeo? Procure pelo número do achado 👇</p>
+<a class="grupo" href="https://chat.whatsapp.com/ENU15xRGku18sDqfq3YXlt" target="_blank" rel="noopener">💬 Entrar no grupo VIP de promoções</a></header>
 <div class="busca"><input id="q" type="search" inputmode="search" placeholder="Digite o nº ou o nome (ex: 12)" autocomplete="off"></div>
 <main id="lista">
 __ITENS__
