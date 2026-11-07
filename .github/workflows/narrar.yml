@@ -11,7 +11,7 @@ on:
         required: true
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   narrar:
@@ -43,3 +43,10 @@ jobs:
           path: |
             reels/voz.mp3
             reels/palavras.json
+      - name: Guardar na branch narracoes
+        run: |
+          mkdir -p /tmp/n && cp reels/voz.mp3 reels/palavras.json /tmp/n/
+          git config user.name "robo-narracao" && git config user.email "robo@users.noreply.github.com"
+          git checkout --orphan narracoes && git rm -rf -q . && cp /tmp/n/* . 
+          git add voz.mp3 palavras.json && git commit -qm "narracao ${{ github.run_id }}"
+          git push -f origin narracoes
