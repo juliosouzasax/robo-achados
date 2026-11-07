@@ -1,0 +1,45 @@
+name: Narrar texto (ElevenLabs)
+
+# Gera só a narração (mp3 + tempo das palavras) com a mesma voz do robô.
+# O resultado fica como "artifact" da execução.
+on:
+  workflow_dispatch:
+    inputs:
+      texto:
+        description: "Texto a ser narrado"
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  narrar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q pillow
+      - name: Gerar narração
+        working-directory: reels
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          ELEVENLABS_VOICE_ID: ${{ secrets.ELEVENLABS_VOICE_ID }}
+          TEXTO: ${{ inputs.texto }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          from tts import narrar
+          p = narrar(os.environ["TEXTO"], os.environ["ELEVENLABS_VOICE_ID"], os.environ["ELEVENLABS_API_KEY"], Path("voz.mp3"))
+          Path("palavras.json").write_text(json.dumps([vars(x) for x in p], ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: narracao
+          path: |
+            reels/voz.mp3
+            reels/palavras.json
