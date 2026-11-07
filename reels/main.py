@@ -94,7 +94,7 @@ def main() -> int:
                                Fontes(FONTES), d / "reel.mp4", d / "capa.jpg", n_cta=len(cta.split()),
                                aviso_ia="/ia/" in p["video_base"],
                                foto=(d / "foto.jpg") if estoque else None, preco=p["preco_txt"] if estoque else None,
-                               legenda_on=not letreiro, som_original=False)
+                               legenda_on=not letreiro, som_original=False, topo_on=not letreiro)
         else:
             baixar(p["imagem_url"], d / "foto_original")
             foto_jpg(d / "foto_original", d / "foto.jpg")

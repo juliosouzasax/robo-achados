@@ -286,7 +286,7 @@ def _tem_audio(arq: Path) -> bool:
 def montar_sobre_video(base: Path, frase_topo: str, palavra_cta: str, palavras: list[Palavra], audio: Path,
                        fontes: Fontes, saida_video: Path, saida_capa: Path, n_cta: int = 0, aviso_ia: bool = False,
                        foto: Path | None = None, preco: str | None = None,
-                       legenda_on: bool = True, som_original: bool = False) -> None:
+                       legenda_on: bool = True, som_original: bool = False, topo_on: bool = True) -> None:
     """Reel no estilo 'caixinha no topo': vídeo real/ilustrativo de fundo, narração, legenda e CTA com palavra."""
     n_cta = min(n_cta, max(0, len(palavras) - 1))
     ini_cta = palavras[-n_cta].ini if n_cta else (palavras[-1].fim if palavras else 6.0)
@@ -347,7 +347,8 @@ def montar_sobre_video(base: Path, frase_topo: str, palavra_cta: str, palavras: 
             yc_card = int(500 + (1 - p_in) * 60 + 8 * math.sin(t * 1.6))
             quadro.paste(card, ((W - card.width) // 2, yc_card), card)
         d = ImageDraw.Draw(quadro, "RGBA")
-        _caixa_texto(d, _quebrar(frase_topo, f_topo, d, W - 200), f_topo, 230, (255, 255, 255, 245), PRETO)
+        if topo_on:  # vídeo que já tem letreiro no topo: não coloca a nossa caixa por cima (evita legenda sobre legenda)
+            _caixa_texto(d, _quebrar(frase_topo, f_topo, d, W - 200), f_topo, 230, (255, 255, 255, 245), PRETO)
 
         if t < ini_cta:
             atual = next((g for g in grupos if g[0] <= t < g[1]), None) if legenda_on else None
@@ -380,7 +381,8 @@ def montar_sobre_video(base: Path, frase_topo: str, palavra_cta: str, palavras: 
     capa = meio or Image.new("RGB", (W, H), PRETO)
     d = ImageDraw.Draw(capa, "RGBA")
     f = fontes.forte(84)
-    _caixa_texto(d, _quebrar(frase_topo, f, d, W - 200), f, 300, (255, 255, 255, 245), PRETO, pad=(44, 30), raio=36)
+    if topo_on:
+        _caixa_texto(d, _quebrar(frase_topo, f, d, W - 200), f, 300, (255, 255, 255, 245), PRETO, pad=(44, 30), raio=36)
     capa.save(saida_capa, "JPEG", quality=90)
 
 
