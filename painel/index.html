@@ -482,6 +482,16 @@ let ultimo = null, mostrarTodos = false;
 const somaDias = (iso, n) => new Date(Date.parse(iso + "T12:00:00Z") + n * DIA).toISOString().slice(0, 10);
 const entreDias = (a, b) => Math.round((Date.parse(b + "T12:00:00Z") - Date.parse(a + "T12:00:00Z")) / DIA);
 const dmy = (iso) => iso.split("-").reverse().join("/");
+const perCache = {};
+async function garantirPeriodo() {
+  const W = janela(diaBR(new Date())); if (W.trinta) return;
+  const chave = W.de + "|" + W.ate; if (perCache[chave]) return;
+  try {
+    const r = await fetch(`/api/periodo?de=${W.de}&ate=${W.ate}`, { cache: "no-store" }); const j = await r.json();
+    if (j.erro || !j.insights) return;
+    perCache[chave] = j; if (ultimo && janela(diaBR(new Date())).de === W.de) desenhar(ultimo);
+  } catch (e) { /* mantém a aproximação */ }
+}
 let periodo = { tipo: "7d", de: null, ate: null };
 try { const sv = JSON.parse(localStorage.getItem("painel_periodo") || "null"); if (sv && sv.tipo) periodo = sv; } catch (e) { /* sem storage */ }
 function janela(hojeISO) {
@@ -504,14 +514,14 @@ function escolher(tipo) {
   if (tipo === "custom") { const h = diaBR(new Date()); periodo.de = periodo.de || somaDias(h, -6); periodo.ate = periodo.ate || h; $("f-de").value = periodo.de; $("f-ate").value = periodo.ate; }
   try { localStorage.setItem("painel_periodo", JSON.stringify(periodo)); } catch (e) { /* sem storage */ }
   marcarFiltro();
-  if (tipo !== "custom" && ultimo) { mostrarTodos = false; desenhar(ultimo); resultado(); }
+  if (tipo !== "custom" && ultimo) { mostrarTodos = false; desenhar(ultimo); resultado(); garantirPeriodo(); }
 }
 document.querySelectorAll("#filtro [data-p]").forEach((b) => b.addEventListener("click", () => escolher(b.dataset.p)));
 $("f-aplicar").addEventListener("click", () => {
   const de = $("f-de").value, ate = $("f-ate").value; if (!de || !ate) return;
   periodo = { tipo: "custom", de, ate };
   try { localStorage.setItem("painel_periodo", JSON.stringify(periodo)); } catch (e) { /* sem storage */ }
-  if (ultimo) { mostrarTodos = false; desenhar(ultimo); resultado(); }
+  if (ultimo) { mostrarTodos = false; desenhar(ultimo); resultado(); garantirPeriodo(); }
 });
 { const h = diaBR(new Date()); $("f-de").max = $("f-ate").max = h; $("f-de").min = $("f-ate").min = somaDias(h, -90); if (periodo.tipo === "custom") { $("f-de").value = periodo.de || ""; $("f-ate").value = periodo.ate || ""; } marcarFiltro(); }
 
@@ -521,7 +531,7 @@ async function carregar() {
     const r = await fetch("/api/dados", { cache: "no-store" });
     const d = await r.json();
     if (d.erro) throw new Error(d.erro);
-    ultimo = d; desenhar(d); resultado(); trafego();
+    ultimo = d; for (const k of Object.keys(perCache)) delete perCache[k]; desenhar(d); resultado(); trafego(); garantirPeriodo();
   } catch (e) {
     $("sub").textContent = "Não consegui carregar agora. Tente de novo em alguns minutos.";
   } finally { b.classList.remove("girando"); }
@@ -628,15 +638,17 @@ function desenhar(d) {
     <path d="${linha} L300,120 L0,120 Z" fill="url(#g1)"/><path d="${linha}" fill="none" stroke="#f7d98b" stroke-width="2.5" vector-effect="non-scaling-stroke"/>` : "";
 
   // kpis
-  const ins = d.insights || {}, ia = W.trinta ? (ins.atual || {}) : {}, ib = W.trinta ? (ins.anterior || {}) : {};
+  const per = W.trinta ? null : perCache[W.de + "|" + W.ate];
+  const ins = per ? per.insights : (d.insights || {});
+  const ia = W.trinta || per ? { ...(ins.atual || {}) } : {}, ib = W.trinta || per ? (ins.anterior || {}) : {};
   const serieAlc = Object.fromEntries((ins.alcance_dia || []).map((x) => [diaBR(new Date(new Date(x.dia) - 3600000)), x.valor]));
-  if (!W.trinta) { const dd = []; for (let i = 0; i < W.n; i++) dd.push(somaDias(W.de, i)); const tem = dd.filter((x) => serieAlc[x] != null); if (tem.length) ia.reach = tem.reduce((s, x) => s + serieAlc[x], 0); }
+  if (!W.trinta && !per) { const dd = []; for (let i = 0; i < W.n; i++) dd.push(somaDias(W.de, i)); const tem = dd.filter((x) => serieAlc[x] != null); if (tem.length) ia.reach = tem.reduce((s, x) => s + serieAlc[x], 0); }
   const kpi = (icone, valor, rotulo, va) => `<div class="kpi">${ic(icone)}<strong>${valor}</strong><span>${rotulo}</span>${va ? `<em class="${va.cls}">${esc(va.txt)}</em>` : ""}</div>`;
   const viewsReels = midias.filter((m) => noPer(diaBR(m.data))).reduce((s, m) => s + (Number(m.views) || 0), 0);
   $("kpis").innerHTML = [
     kpi("carrinho", fmt.format(pedidosDe(atual)), pedidosDe(atual) === 1 ? "pedido" : "pedidos", variacao(pedidosDe(atual), pedidosDe(antes), { base: 5 })),
     kpi("caixa", fmt.format(itensDe(atual)), "itens vendidos", variacao(itensDe(atual), itensDe(antes), { base: 5 })),
-    kpi("pessoas", ia.reach != null ? fmt.format(ia.reach) : "—", W.trinta ? "contas alcançadas" : "alcance (soma dos dias)", variacao(ia.reach, ib.reach)),
+    kpi("pessoas", ia.reach != null ? fmt.format(ia.reach) : "—", W.trinta || per ? "contas alcançadas" : "alcance (soma dos dias)", variacao(ia.reach, ib.reach)),
     kpi("olho", ia.views != null ? fmt.format(ia.views) : fmt.format(viewsReels), ia.views != null ? "views no perfil" : "views dos Reels do período", variacao(ia.views, ib.views)),
   ].join("");
 
