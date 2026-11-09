@@ -46,6 +46,13 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
 .chip.shopee{background:var(--shopee);border-color:var(--shopee);color:#fff}
 .chip.icone{width:38px;padding:0;justify-content:center}
 .chip .rot{display:none}
+.filtro{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 16px}
+.filtro .chip{height:34px;padding:0 14px}
+.filtro .chip.on{background:var(--ouro);border-color:var(--ouro);color:#1a1405}
+.filtro .intervalo{display:none;flex-wrap:wrap;align-items:center;gap:8px;width:100%}
+.filtro .intervalo.aberto{display:flex}
+.filtro input[type=date]{height:34px;border-radius:999px;border:1px solid var(--linha);background:var(--grafite);color:var(--texto);padding:0 12px;font:inherit;font-size:.84rem;color-scheme:dark}
+.filtro .rotulo{color:var(--suave);font-size:.8rem;margin-left:auto}
 .girando svg{animation:gira 1s linear infinite}
 @keyframes gira{to{transform:rotate(360deg)}}
 
@@ -311,9 +318,24 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
       </div>
     </header>
 
+    <div class="filtro" id="filtro" role="group" aria-label="Período">
+      <button class="chip" data-p="hoje">Hoje</button>
+      <button class="chip" data-p="ontem">Ontem</button>
+      <button class="chip" data-p="7d">7 dias</button>
+      <button class="chip" data-p="30d">30 dias</button>
+      <button class="chip" data-p="mes">Este mês</button>
+      <button class="chip" data-p="custom">Escolher período</button>
+      <span class="rotulo" id="f-rotulo"></span>
+      <div class="intervalo" id="f-intervalo">
+        <label>De <input type="date" id="f-de"></label>
+        <label>até <input type="date" id="f-ate"></label>
+        <button class="chip on" id="f-aplicar">Aplicar</button>
+      </div>
+    </div>
+
     <div class="grade-topo">
       <section class="cartao heroi" aria-label="Comissões">
-        <div class="rot">Vendas e comissões · últimos 30 dias</div>
+        <div class="rot">Vendas e comissões · <span data-per>últimos 30 dias</span></div>
         <div class="valor" id="h-valor">—</div>
         <div class="linha-delta" id="h-delta"></div>
         <div class="divide" id="h-divide"></div>
@@ -325,7 +347,7 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
     <div id="alerta"></div>
 
     <section class="cartao resultado secao" aria-labelledby="t-resultado">
-      <div class="cab"><h2 id="t-resultado">Resultado</h2><span class="extra">30 dias</span></div>
+      <div class="cab"><h2 id="t-resultado">Resultado</h2><span class="extra" data-per>30 dias</span></div>
       <div class="eq">
         <div><b id="r-rec">—</b><span>Receitas (comissões)</span></div><div class="op">−</div>
         <div><b id="r-desp">—</b><span>Despesas (tráfego)</span></div><div class="op">=</div>
@@ -345,7 +367,7 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
         <p class="nota">Semana: cada quadrado é um horário de Reel. O número é o achado que saiu.</p>
       </section>
       <section class="cartao" aria-labelledby="t-funil">
-        <div class="cab"><h2 id="t-funil"><svg><use href="#i-funil"/></svg>Funil de vendas</h2><span class="extra">30 dias</span></div>
+        <div class="cab"><h2 id="t-funil"><svg><use href="#i-funil"/></svg>Funil de vendas</h2><span class="extra" data-per>30 dias</span></div>
         <div class="funil" id="funil"></div>
         <p class="nota">A % é em relação à etapa anterior. Views e alcance vêm do Instagram; pedidos, da Shopee.</p>
       </section>
@@ -360,7 +382,7 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
         <p class="nota">Pendente vira concluída quando o cliente recebe. A Shopee paga as concluídas no dia 1 de cada mês, a partir de R$ 10.</p>
       </section>
       <section class="cartao" aria-labelledby="t-comissao-dia">
-        <div class="cab"><h2 id="t-comissao-dia"><svg><use href="#i-barras"/></svg>Comissão por dia</h2><span class="extra">14 dias</span></div>
+        <div class="cab"><h2 id="t-comissao-dia"><svg><use href="#i-barras"/></svg>Comissão por dia</h2><span class="extra" data-per>14 dias</span></div>
         <div class="barras" id="b-comissao"></div>
         <div class="barras-rot" id="b-comissao-rot"></div>
         <p class="nota" id="nota-comissao"></p>
@@ -368,7 +390,7 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
     </div>
 
     <section class="cartao secao" aria-labelledby="t-origem">
-      <div class="cab"><h2 id="t-origem"><svg><use href="#i-alvo"/></svg>De onde vieram as vendas</h2><span class="extra">30 dias</span></div>
+      <div class="cab"><h2 id="t-origem"><svg><use href="#i-alvo"/></svg>De onde vieram as vendas</h2><span class="extra" data-per>30 dias</span></div>
       <div class="origens" id="origens"></div>
       <p class="nota">Desde 02/11 cada Reel, Story, Direct, a vitrine da bio e o grupo do WhatsApp usam um link próprio, e a Shopee devolve de onde veio cada pedido. Vendas antigas aparecem como "antes do rastreio".</p>
     </section>
@@ -381,7 +403,7 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
         <p class="nota">Por produto: views somadas dos Reels do achado e pedidos do mesmo produto na Shopee. A Shopee não diz de qual post veio o clique.</p>
       </section>
       <section class="cartao" aria-labelledby="t-alcance">
-        <div class="cab"><h2 id="t-alcance"><svg><use href="#i-pessoas"/></svg>Alcance por dia</h2><span class="extra">14 dias</span></div>
+        <div class="cab"><h2 id="t-alcance"><svg><use href="#i-pessoas"/></svg>Alcance por dia</h2><span class="extra" data-per>14 dias</span></div>
         <div class="barras" id="b-alcance"></div>
         <div class="barras-rot" id="b-alcance-rot"></div>
         <div class="mini-kpis secao" id="eng"></div>
@@ -447,7 +469,7 @@ const palavras = (t) => new Set(normal(t).split(/\s+/).filter((w) => w.length > 
 // variação: só mostra % quando a base anterior é grande o bastante para fazer sentido
 function variacao(atual, anterior, { dinheiro = false, base = 20 } = {}) {
   if (anterior == null || atual == null) return null;
-  if (anterior === 0 && atual === 0) return { cls: "neutro", txt: "igual aos 30 dias anteriores" };
+  if (anterior === 0 && atual === 0) return { cls: "neutro", txt: "igual ao período anterior" };
   if (anterior === 0) return { cls: "sobe", txt: dinheiro ? "primeiras comissões" : "antes: 0" };
   if (!dinheiro && anterior < base) return { cls: atual >= anterior ? "sobe" : "desce", txt: `antes: ${fmt.format(anterior)}` };
   const p = Math.round(((atual - anterior) / anterior) * 100);
@@ -455,6 +477,43 @@ function variacao(atual, anterior, { dinheiro = false, base = 20 } = {}) {
 }
 
 let ultimo = null, mostrarTodos = false;
+
+// ---------- filtro de período (datas em horário de Brasília) ----------
+const somaDias = (iso, n) => new Date(Date.parse(iso + "T12:00:00Z") + n * DIA).toISOString().slice(0, 10);
+const entreDias = (a, b) => Math.round((Date.parse(b + "T12:00:00Z") - Date.parse(a + "T12:00:00Z")) / DIA);
+const dmy = (iso) => iso.split("-").reverse().join("/");
+let periodo = { tipo: "7d", de: null, ate: null };
+try { const sv = JSON.parse(localStorage.getItem("painel_periodo") || "null"); if (sv && sv.tipo) periodo = sv; } catch (e) { /* sem storage */ }
+function janela(hojeISO) {
+  const t = periodo.tipo; let de, ate = hojeISO, rot;
+  if (t === "hoje") { de = hojeISO; rot = "Hoje"; }
+  else if (t === "ontem") { de = ate = somaDias(hojeISO, -1); rot = "Ontem"; }
+  else if (t === "30d") { de = somaDias(hojeISO, -29); rot = "Últimos 30 dias"; }
+  else if (t === "mes") { de = hojeISO.slice(0, 8) + "01"; rot = "Este mês"; }
+  else if (t === "custom" && periodo.de && periodo.ate) { de = periodo.de <= periodo.ate ? periodo.de : periodo.ate; ate = periodo.de <= periodo.ate ? periodo.ate : periodo.de; if (ate > hojeISO) ate = hojeISO; rot = de === ate ? dmy(de) : `${dmy(de)} a ${dmy(ate)}`; }
+  else { de = somaDias(hojeISO, -6); rot = "Últimos 7 dias"; }
+  const n = entreDias(de, ate) + 1;
+  return { de, ate, n, rot, dePrev: somaDias(de, -n), atePrev: somaDias(de, -1), trinta: periodo.tipo === "30d" };
+}
+function marcarFiltro() {
+  for (const b of document.querySelectorAll("#filtro [data-p]")) b.classList.toggle("on", b.dataset.p === periodo.tipo);
+  $("f-intervalo").classList.toggle("aberto", periodo.tipo === "custom");
+}
+function escolher(tipo) {
+  periodo = { ...periodo, tipo };
+  if (tipo === "custom") { const h = diaBR(new Date()); periodo.de = periodo.de || somaDias(h, -6); periodo.ate = periodo.ate || h; $("f-de").value = periodo.de; $("f-ate").value = periodo.ate; }
+  try { localStorage.setItem("painel_periodo", JSON.stringify(periodo)); } catch (e) { /* sem storage */ }
+  marcarFiltro();
+  if (tipo !== "custom" && ultimo) { mostrarTodos = false; desenhar(ultimo); resultado(); }
+}
+document.querySelectorAll("#filtro [data-p]").forEach((b) => b.addEventListener("click", () => escolher(b.dataset.p)));
+$("f-aplicar").addEventListener("click", () => {
+  const de = $("f-de").value, ate = $("f-ate").value; if (!de || !ate) return;
+  periodo = { tipo: "custom", de, ate };
+  try { localStorage.setItem("painel_periodo", JSON.stringify(periodo)); } catch (e) { /* sem storage */ }
+  if (ultimo) { mostrarTodos = false; desenhar(ultimo); resultado(); }
+});
+{ const h = diaBR(new Date()); $("f-de").max = $("f-ate").max = h; $("f-de").min = $("f-ate").min = somaDias(h, -90); if (periodo.tipo === "custom") { $("f-de").value = periodo.de || ""; $("f-ate").value = periodo.ate || ""; } marcarFiltro(); }
 
 async function carregar() {
   const b = $("atualizar"); b.classList.add("girando");
@@ -495,8 +554,8 @@ async function resultado() {
   try {
     const r = await fetch("/api/despesas", { cache: "no-store" }); const j = await r.json();
     if (j.erro) throw new Error(j.erro);
-    const ini = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
-    const lista = (j.despesas || []).filter((x) => x.data >= ini);
+    const w = janela(diaBR(new Date()));
+    const lista = (j.despesas || []).filter((x) => x.data >= w.de && x.data <= w.ate);
     const desp = lista.reduce((s, x) => s + (Number(x.valor) || 0), 0);
     const rec = ultimo ? Number(ultimo._comAtual) || 0 : 0;
     const res = rec - desp;
@@ -541,10 +600,12 @@ function desenhar(d) {
     }
     l.produto = p || null;
   }
-  const em = (l, ini, fim) => l.data >= ini && l.data < fim;
-  const ini30 = new Date(agora - 30 * DIA), ini60 = new Date(agora - 60 * DIA);
-  const atual = linhas.filter((l) => valida(l) && em(l, ini30, new Date(agora.getTime() + DIA)));
-  const antes = linhas.filter((l) => valida(l) && em(l, ini60, ini30));
+  const W = janela(diaBR(agora));
+  document.querySelectorAll("[data-per]").forEach((el) => { el.textContent = W.rot; });
+  $("f-rotulo").textContent = W.n > 1 ? `${dmy(W.de)} a ${dmy(W.ate)}` : dmy(W.de);
+  const noPer = (dia) => dia >= W.de && dia <= W.ate;
+  const atual = linhas.filter((l) => valida(l) && noPer(diaBR(l.data)));
+  const antes = linhas.filter((l) => { const dd = diaBR(l.data); return valida(l) && dd >= W.dePrev && dd <= W.atePrev; });
   const soma = (arr) => arr.reduce((s, l) => s + l.com, 0);
   const comAtual = soma(atual), comAntes = soma(antes);
   d._comAtual = comAtual;
@@ -554,27 +615,29 @@ function desenhar(d) {
   $("h-valor").textContent = v.erro ? "—" : brl(comAtual);
   const vc = variacao(comAtual, comAntes, { dinheiro: true });
   $("h-delta").innerHTML = v.erro ? `<span class="delta neutro">Shopee fora do ar agora</span>`
-    : vc ? `<span class="delta ${vc.cls}">${esc(vc.txt)}</span><span>${vc.pct ? "vs. 30 dias anteriores" : comAntes === 0 && comAtual > 0 ? "nada nos 30 dias anteriores" : ""}</span>` : "";
+    : vc ? `<span class="delta ${vc.cls}">${esc(vc.txt)}</span><span>${vc.pct ? "vs. período anterior" : comAntes === 0 && comAtual > 0 ? "nada no período anterior" : ""}</span>` : "";
   $("h-divide").innerHTML = `<div><b>${brl(soma(atual.filter((l) => l.status === "COMPLETED")))}</b>concluída</div><div><b>${brl(soma(atual.filter((l) => l.status !== "COMPLETED")))}</b>pendente</div>`;
 
   // sparkline da comissão acumulada em 30 dias
-  const dias30 = []; for (let i = 29; i >= 0; i--) dias30.push(diaBR(new Date(agora - i * DIA)));
-  let acum = 0; const pts = dias30.map((dia) => (acum += soma(atual.filter((l) => diaBR(l.data) === dia))));
+  const diasP = []; for (let i = Math.min(W.n, 92) - 1; i >= 0; i--) diasP.push(somaDias(W.ate, -i));
+  let acum = 0; const pts = diasP.map((dia) => (acum += soma(atual.filter((l) => diaBR(l.data) === dia))));
   const topo = Math.max(1, acum);
-  const xy = pts.map((y, i) => [(i / 29) * 300, 112 - (y / topo) * 96]);
+  const xy = pts.map((y, i) => [(i / Math.max(1, pts.length - 1)) * 300, 112 - (y / topo) * 96]);
   const linha = xy.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
-  $("h-spark").innerHTML = acum ? `<defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8b64c" stop-opacity=".45"/><stop offset="1" stop-color="#e8b64c" stop-opacity="0"/></linearGradient></defs>
+  $("h-spark").innerHTML = acum && pts.length > 1 ? `<defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8b64c" stop-opacity=".45"/><stop offset="1" stop-color="#e8b64c" stop-opacity="0"/></linearGradient></defs>
     <path d="${linha} L300,120 L0,120 Z" fill="url(#g1)"/><path d="${linha}" fill="none" stroke="#f7d98b" stroke-width="2.5" vector-effect="non-scaling-stroke"/>` : "";
 
   // kpis
-  const ins = d.insights || {}, ia = ins.atual || {}, ib = ins.anterior || {};
+  const ins = d.insights || {}, ia = W.trinta ? (ins.atual || {}) : {}, ib = W.trinta ? (ins.anterior || {}) : {};
+  const serieAlc = Object.fromEntries((ins.alcance_dia || []).map((x) => [diaBR(new Date(new Date(x.dia) - 3600000)), x.valor]));
+  if (!W.trinta) { const dd = []; for (let i = 0; i < W.n; i++) dd.push(somaDias(W.de, i)); const tem = dd.filter((x) => serieAlc[x] != null); if (tem.length) ia.reach = tem.reduce((s, x) => s + serieAlc[x], 0); }
   const kpi = (icone, valor, rotulo, va) => `<div class="kpi">${ic(icone)}<strong>${valor}</strong><span>${rotulo}</span>${va ? `<em class="${va.cls}">${esc(va.txt)}</em>` : ""}</div>`;
-  const viewsReels = midias.filter((m) => m.data > ini30).reduce((s, m) => s + (Number(m.views) || 0), 0);
+  const viewsReels = midias.filter((m) => noPer(diaBR(m.data))).reduce((s, m) => s + (Number(m.views) || 0), 0);
   $("kpis").innerHTML = [
     kpi("carrinho", fmt.format(pedidosDe(atual)), pedidosDe(atual) === 1 ? "pedido" : "pedidos", variacao(pedidosDe(atual), pedidosDe(antes), { base: 5 })),
     kpi("caixa", fmt.format(itensDe(atual)), "itens vendidos", variacao(itensDe(atual), itensDe(antes), { base: 5 })),
-    kpi("pessoas", ia.reach != null ? fmt.format(ia.reach) : "—", "contas alcançadas", variacao(ia.reach, ib.reach)),
-    kpi("olho", ia.views != null ? fmt.format(ia.views) : fmt.format(viewsReels), "views no perfil", variacao(ia.views, ib.views)),
+    kpi("pessoas", ia.reach != null ? fmt.format(ia.reach) : "—", W.trinta ? "contas alcançadas" : "alcance (soma dos dias)", variacao(ia.reach, ib.reach)),
+    kpi("olho", ia.views != null ? fmt.format(ia.views) : fmt.format(viewsReels), ia.views != null ? "views no perfil" : "views dos Reels do período", variacao(ia.views, ib.views)),
   ].join("");
 
   // ---------- falhas ----------
@@ -661,7 +724,7 @@ function desenhar(d) {
 
   // ---------- pedidos ----------
   const STATUS = { PENDING: ["Pendente", "pendente"], COMPLETED: ["Concluída", "concluida"], CANCELLED: ["Cancelada", "cancelada"], UNPAID: ["Aguardando", "pendente"], INVALID: ["Cancelada", "cancelada"] };
-  const lista = linhas.filter((l) => l.data > ini30);
+  const lista = linhas.filter((l) => noPer(diaBR(l.data)));
   const mostra = mostrarTodos ? lista : lista.slice(0, 6);
   $("pedidos").innerHTML = v.erro ? `<li class="vazio">Não consegui ler as vendas da Shopee agora.</li>` : mostra.length ? mostra.map((l) => {
     const [rot, cls] = STATUS[l.status] || [l.status, "pendente"];
@@ -671,7 +734,7 @@ function desenhar(d) {
       <span class="valor-it">${brl(l.com)}</span>
       <span class="meta">${quando(l.data)}${l.produto ? " · achado #" + l.produto.id : ""}</span>
       <span class="status-it"><span class="pill ${cls}">${rot}</span></span></li>`;
-  }).join("") : `<li class="vazio">Nenhuma venda nos últimos 30 dias ainda.</li>`;
+  }).join("") : `<li class="vazio">Nenhuma venda neste período.</li>`;
   $("ver-mais").hidden = lista.length <= 6 || mostrarTodos;
   $("ver-mais").textContent = `Ver todos os ${lista.length} itens`;
 
@@ -683,16 +746,16 @@ function desenhar(d) {
   }).join("");
 
   // comissão por dia (14)
-  const dias14 = dias30.slice(-14);
+  const dias14 = diasP.slice(-31);
   const porDiaCom = dias14.map((dia) => soma(atual.filter((l) => diaBR(l.data) === dia)));
   barras("b-comissao", "b-comissao-rot", dias14, porDiaCom, (x) => brl(x), hoje);
   const melhorDia = Math.max(...porDiaCom);
-  $("nota-comissao").textContent = melhorDia > 0 ? `Melhor dia: ${diaCurto(dias14[porDiaCom.indexOf(melhorDia)])}, com ${brl(melhorDia)}.` : "Ainda sem comissão nos últimos 14 dias.";
+  $("nota-comissao").textContent = melhorDia > 0 ? `Melhor dia: ${diaCurto(dias14[porDiaCom.indexOf(melhorDia)])}, com ${brl(melhorDia)}.` : "Sem comissão neste período.";
 
   // ---------- ranking por achado ----------
   const ranking = {};
   const linhaRank = (id) => (ranking[id] ??= { p: porId[id], views: 0, reels: 0, pedidos: new Set(), com: 0, itens: 0 });
-  for (const m of midias) if (m.achado && porId[m.achado]) { const r = linhaRank(m.achado); r.views += Number(m.views) || 0; r.reels++; }
+  for (const m of midias) if (m.achado && porId[m.achado] && noPer(diaBR(m.data))) { const r = linhaRank(m.achado); r.views += Number(m.views) || 0; r.reels++; }
   for (const l of atual) if (l.produto) { const r = linhaRank(l.produto.id); r.pedidos.add(l.orderId); r.com += l.com; r.itens += l.qtd; }
   const rank = Object.values(ranking).filter((r) => r.p).sort((a, b) => b.com - a.com || b.views - a.views).slice(0, 8);
   const semDono = atual.filter((l) => !l.produto);
@@ -705,7 +768,7 @@ function desenhar(d) {
     : `<li class="vazio">Ainda sem dados suficientes.</li>`;
 
   // alcance por dia
-  const serie = Object.fromEntries((ins.alcance_dia || []).map((x) => [diaBR(new Date(new Date(x.dia) - 3600000)), x.valor]));
+  const serie = serieAlc;
   barras("b-alcance", "b-alcance-rot", dias14, dias14.map((dia) => serie[dia] ?? 0), (x) => fmt.format(x) + " contas", hoje);
   $("eng").innerHTML = [
     [ia.total_interactions, "interações"],
@@ -717,13 +780,13 @@ function desenhar(d) {
   const vendidos = new Set(atual.filter((l) => l.produto).map((l) => l.produto.id));
   const comPorPost = {};
   for (const l of atual) if (l.canal === "reel" && l.ref) comPorPost[l.ref] = (comPorPost[l.ref] || 0) + l.com;
-  const top = midias.filter((m) => m.media_product_type === "REELS").sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 8);
+  const top = midias.filter((m) => m.media_product_type === "REELS" && noPer(diaBR(m.data))).sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 8);
   $("reels").innerHTML = top.map((m) => {
     const p = porId[m.achado];
     return `<a class="reel" href="${esc(m.permalink)}" target="_blank" rel="noopener">
       <div class="capa" style="background-image:url('${esc(m.thumbnail_url || "")}')"><span>${ic("play")}${fmt.format(m.views || 0)}</span>${comPorPost[m.id] ? `<span class="vend">${brl(comPorPost[m.id])}</span>` : vendidos.has(m.achado) ? `<span class="vend">vendeu</span>` : ""}</div>
       <div class="info"><b>${esc(p?.titulo_curto || (m.caption || "").split("\n")[0].replace(/[\u{1F300}-\u{1FAFF}]/gu, "").trim() || "Reel")}</b>${quando(m.data)} · ${fmt.format(m.reach || 0)} contas</div></a>`;
-  }).join("") || `<div class="vazio">Nenhum Reel ainda.</div>`;
+  }).join("") || `<div class="vazio">Nenhum Reel neste período.</div>`;
 
   // ---------- produtos ----------
   const ativos = produtos.filter((p) => p.ativo);
