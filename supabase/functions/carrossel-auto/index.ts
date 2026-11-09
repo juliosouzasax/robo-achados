@@ -1,6 +1,7 @@
 // carrossel-auto: monta e posta 1 carrossel por execução, sem intervenção humana.
-// POST {modo:"teste"|"publicar"}  (cabeçalho x-convite = config.yt_convite)
-// teste = gera as imagens e devolve as URLs, sem postar. publicar = posta no Instagram.
+// POST {modo:"teste"|"preparar"|"publicar"}  (cabeçalho x-convite = config.yt_convite)
+// teste = gera e devolve as URLs, sem postar. preparar = gera e guarda como "pronto" para o próximo publicar.
+// publicar = posta o "pronto" (se houver) ou gera um novo e posta no Instagram.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Image } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
 
@@ -93,6 +94,35 @@ async function texto(img: Image, t: string, tam: number, cor: number, x: number,
   const tx = await Image.renderText(await fonte(), tam, t, cor);
   img.composite(tx, centro ? x + Math.round((larg - tx.width) / 2) : x, y);
 }
+// ---------- logo da Gabi (foto de perfil do @ogarimpodagabi) ----------
+let LOGO: Image | null | undefined;
+async function logo(): Promise<Image | null> {
+  if (LOGO !== undefined) return LOGO;
+  try {
+    const token = (await conf("ig_token")) ?? Deno.env.get("IG_ACCESS_TOKEN")!;
+    const me = await ig("/me", token, { fields: "profile_picture_url" });
+    const r = await fetch(me.profile_picture_url);
+    const foto = (await Image.decode(new Uint8Array(await r.arrayBuffer()))).resize(160, 160).cropCircle();
+    const anel = new Image(172, 172).fill(0xffffffff).cropCircle();
+    anel.composite(foto, 6, 6);
+    LOGO = anel;
+  } catch (_e) { LOGO = null; }
+  return LOGO;
+}
+function poeLogo(img: Image, l: Image | null, x: number, y: number, lado = 0) {
+  if (!l) return img;
+  const m = lado ? l.clone().resize(lado, lado) : l;
+  img.composite(m, x, y);
+  return img;
+}
+async function capaComLogo(bin: Uint8Array) {
+  const l = await logo();
+  if (!l) return bin;
+  const im = await Image.decode(bin);
+  poeLogo(im, l, im.width - 150 - 28, 28, 150);
+  return await im.encode();
+}
+
 async function slideProduto(p: any, n: number) {
   const r = await fetch(p.imagem_url, { headers: { accept: "image/jpeg,image/png" } });
   if (!r.ok) throw new Error("foto " + r.status);
@@ -104,6 +134,7 @@ async function slideProduto(p: any, n: number) {
   bg.composite(new Image(960, 1010).fill(0xffffffff), 60, 60);
   bg.composite(foto, 60 + Math.round((960 - foto.width) / 2), 60 + Math.round((1010 - foto.height) / 2));
   bg.composite(new Image(150, 150).fill(0xff6b2cff), 60, 60);
+  poeLogo(bg, await logo(), 1080 - 60 - 20 - 130, 80, 130);
   await texto(bg, String(n), 110, 0xffffffff, 60, 85, true, 150);
   const tit = await linhas(p.titulo_curto || p.titulo, 52, 940, 2);
   let y = 1090;
@@ -115,8 +146,9 @@ async function slideFinal(n: string) {
   const W = 1080, H = 1350;
   const bg = new Image(W, H).fill(0xff6b2cff);
   const bloco: [string, number][] = [["Quer os links?", 120], ["Comenta QUERO", 100], ["que eu te mando", 70], ["no seu direct", 70]];
-  let y = 360;
+  let y = 400;
   for (const [t, s] of bloco) { await texto(bg, t, s, 0xffffffff, 0, y, true, W); y += s + 50; }
+  poeLogo(bg, await logo(), Math.round((W - 220) / 2), 90, 220);
   await texto(bg, `Carrossel ${n}`, 44, 0xfff3e8ff, 0, 1210, true, W);
   return await bg.encodeJPEG(88);
 }
@@ -153,59 +185,67 @@ async function postar(urls: string[], legenda: string) {
 }
 
 // ---------- fluxo ----------
+async function montar() {
+  const { data: chaves } = await db.from("config").select("chave").like("chave", "carrossel_%");
+  const n = Math.max(0, ...(chaves ?? []).map((c: any) => parseInt(String(c.chave).split("_")[1]) || 0)) + 1;
+  const num = String(n).padStart(3, "0");
+  const { data: pubs } = await db.from("publicacoes").select("detalhe").eq("status", "carrossel");
+  const usados = new Set<number>();
+  for (const p of pubs ?? []) for (const m of String(p.detalhe ?? "").matchAll(/ids ([\d,]+)/g)) m[1].split(",").forEach((x) => usados.add(+x));
+
+  const { data: cand } = await db.from("produtos").select("id,titulo,titulo_curto,preco,imagem_url,link_afiliado,vendidos")
+    .eq("ativo", true).not("imagem_url", "is", null).not("link_afiliado", "is", null)
+    .order("vendidos", { ascending: false, nullsFirst: false }).limit(60);
+  const pool = (cand ?? []).filter((p: any) => !usados.has(p.id)).sort(() => Math.random() - 0.5);
+
+  const slides: { p: any; bin: Uint8Array }[] = [];
+  for (const p of pool) {
+    if (slides.length === 5) break;
+    try { slides.push({ p, bin: await slideProduto(p, slides.length + 1) }); } catch (_e) { /* tenta o próximo */ }
+  }
+  if (slides.length < 5) throw new Error("poucos produtos com foto utilizável: " + slides.length);
+
+  const idea = await ideia(slides.map((s) => s.p.titulo_curto || s.p.titulo));
+  const capa = await capaComLogo(await gerarCapa(idea));
+
+  const tag = `car${num}-${Date.now()}`;
+  const urls: string[] = [await subir(`${tag}-0.png`, capa, "image/png")];
+  for (let i = 0; i < slides.length; i++) urls.push(await subir(`${tag}-${i + 1}.jpg`, slides[i].bin, "image/jpeg"));
+  urls.push(await subir(`${tag}-6.jpg`, await slideFinal(num), "image/jpeg"));
+
+  const lista = slides.map((s, i) => `${i + 1}️⃣ ${s.p.titulo_curto || s.p.titulo} (${brl(s.p.preco)})`).join("\n");
+  const legenda = `${idea.gancho}\n\n5 achadinhos da Shopee que valem cada centavo 👇\n${lista}\n\n` +
+    `Comenta QUERO que eu te mando os links no direct 🧡\n\nCarrossel ${num}\n\n#achadinhos #shopee #achadinhosdashopee #garimpo #casa`;
+  const resposta = `Segue os links que você solicitou do Carrossel ${num} 🧡\n` +
+    slides.map((s, i) => `${i + 1}️⃣ ${s.p.titulo_curto || s.p.titulo} (${brl(s.p.preco)}) ${s.p.link_afiliado}`).join("\n") +
+    `\nEntra no nosso grupo VIP de promoções, toda hora tem achado novo 👇 ${GRUPO}\n⚠️ Preço e disponibilidade podem mudar.`;
+  return { num, idea, urls, legenda, resposta, ids: slides.map((s) => s.p.id) };
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ erro: "use POST" }, 405);
   const conv = await conf("yt_convite");
   if (!conv || req.headers.get("x-convite") !== conv) return json({ erro: "convite inválido" }, 401);
   const b = await req.json().catch(() => ({}));
-  const publicar = b.modo === "publicar";
   try {
-    if (publicar) {
-      const desde = new Date(Date.now() - 20 * 3600 * 1000).toISOString();
+    if (b.modo === "publicar") {
+      const desde = new Date(Date.now() - 16 * 3600 * 1000).toISOString();
       const { data: rec } = await db.from("publicacoes").select("id").eq("status", "carrossel").gte("criado_em", desde).limit(1);
-      if (rec?.length) return json({ pulou: "já houve carrossel nas últimas 20h" });
+      if (rec?.length) return json({ pulou: "já houve carrossel nas últimas 16h" });
+      const pronto = await conf("carrossel_pronto");
+      const pk = pronto ? JSON.parse(pronto) : await montar();
+      const midia = await postar(pk.urls, pk.legenda);
+      await db.from("config").upsert({ chave: `carrossel_${pk.num}`, valor: pk.resposta, atualizado: new Date().toISOString() });
+      await db.from("publicacoes").insert({ tipo: "feed", status: "carrossel", ig_media_id: midia, detalhe: `carrossel ${pk.num}: ids ${pk.ids.join(",")}` });
+      if (pronto) await db.from("config").delete().eq("chave", "carrossel_pronto");
+      return json({ publicado: midia, numero: pk.num, urls: pk.urls });
     }
-    // número do carrossel e produtos já usados
-    const { data: chaves } = await db.from("config").select("chave").like("chave", "carrossel_%");
-    const n = Math.max(0, ...(chaves ?? []).map((c: any) => parseInt(String(c.chave).split("_")[1]) || 0)) + 1;
-    const num = String(n).padStart(3, "0");
-    const { data: pubs } = await db.from("publicacoes").select("detalhe").eq("status", "carrossel");
-    const usados = new Set<number>();
-    for (const p of pubs ?? []) for (const m of String(p.detalhe ?? "").matchAll(/ids ([\d,]+)/g)) m[1].split(",").forEach((x) => usados.add(+x));
-
-    const { data: cand } = await db.from("produtos").select("id,titulo,titulo_curto,preco,imagem_url,link_afiliado,vendidos")
-      .eq("ativo", true).not("imagem_url", "is", null).not("link_afiliado", "is", null)
-      .order("vendidos", { ascending: false, nullsFirst: false }).limit(60);
-    const pool = (cand ?? []).filter((p: any) => !usados.has(p.id)).sort(() => Math.random() - 0.5);
-
-    const slides: { p: any; bin: Uint8Array }[] = [];
-    for (const p of pool) {
-      if (slides.length === 5) break;
-      try { slides.push({ p, bin: await slideProduto(p, slides.length + 1) }); } catch (_e) { /* tenta o próximo */ }
+    const pk = await montar();
+    if (b.modo === "preparar") {
+      await db.from("config").upsert({ chave: "carrossel_pronto", valor: JSON.stringify(pk), atualizado: new Date().toISOString() });
+      return json({ modo: "preparado", numero: pk.num, ideia: pk.idea, legenda: pk.legenda, urls: pk.urls });
     }
-    if (slides.length < 5) return json({ erro: "poucos produtos com foto utilizável", ok: slides.length }, 500);
-
-    const idea = await ideia(slides.map((s) => s.p.titulo_curto || s.p.titulo));
-    const capa = await gerarCapa(idea);
-
-    const tag = `car${num}-${Date.now()}`;
-    const urls: string[] = [await subir(`${tag}-0.png`, capa, "image/png")];
-    for (let i = 0; i < slides.length; i++) urls.push(await subir(`${tag}-${i + 1}.jpg`, slides[i].bin, "image/jpeg"));
-    urls.push(await subir(`${tag}-6.jpg`, await slideFinal(num), "image/jpeg"));
-
-    const lista = slides.map((s, i) => `${i + 1}️⃣ ${s.p.titulo_curto || s.p.titulo} (${brl(s.p.preco)})`).join("\n");
-    const legenda = `${idea.gancho}\n\n5 achadinhos da Shopee que valem cada centavo 👇\n${lista}\n\n` +
-      `Comenta QUERO que eu te mando os links no direct 🧡\n\nCarrossel ${num}\n\n#achadinhos #shopee #achadinhosdashopee #garimpo #casa`;
-    const resposta = `Segue os links que você solicitou do Carrossel ${num} 🧡\n` +
-      slides.map((s, i) => `${i + 1}️⃣ ${s.p.titulo_curto || s.p.titulo} (${brl(s.p.preco)}) ${s.p.link_afiliado}`).join("\n") +
-      `\nEntra no nosso grupo VIP de promoções, toda hora tem achado novo 👇 ${GRUPO}\n⚠️ Preço e disponibilidade podem mudar.`;
-
-    if (!publicar) return json({ modo: "teste", numero: num, ideia: idea, legenda, urls });
-
-    const midia = await postar(urls, legenda);
-    await db.from("config").upsert({ chave: `carrossel_${num}`, valor: resposta, atualizado: new Date().toISOString() });
-    await db.from("publicacoes").insert({ tipo: "feed", status: "carrossel", ig_media_id: midia, detalhe: `carrossel ${num}: ids ${slides.map((s) => s.p.id).join(",")}` });
-    return json({ publicado: midia, numero: num, urls });
+    return json({ modo: "teste", numero: pk.num, ideia: pk.idea, legenda: pk.legenda, urls: pk.urls });
   } catch (e) {
     return json({ erro: String(e).slice(0, 400) }, 500);
   }
