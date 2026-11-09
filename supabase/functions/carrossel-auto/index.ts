@@ -7,7 +7,7 @@ import { Image } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 const IG_USER = "17841417870379395";
-const GRUPO = "https://chat.whatsapp.com/ENU15xRGku18sDqfq3YXlt";
+const GRUPO = "https://chat.whatsapp.com/KfnTthhq8xq5IykLNZ8gJf";
 const json = (o: unknown, s = 200) =>
   new Response(JSON.stringify(o), { status: s, headers: { "content-type": "application/json" } });
 const OPENAI = Deno.env.get("OPENAI_API_KEY")!;

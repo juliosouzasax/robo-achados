@@ -64,7 +64,7 @@ main{max-width:560px;margin:0 auto;padding:12px 16px 32px;display:grid;gap:10px}
 footer{text-align:center;color:var(--cinza);font-size:12px;padding:0 16px 28px;max-width:560px;margin:0 auto}
 </style></head><body>
 <header><h1>GARIMPO DA GABI</h1><p>Viu no vídeo? Procure pelo número do achado 👇</p>
-<a class="grupo" href="https://chat.whatsapp.com/ENU15xRGku18sDqfq3YXlt" target="_blank" rel="noopener">💬 Entrar no grupo VIP de promoções</a></header>
+<a class="grupo" href="https://chat.whatsapp.com/KfnTthhq8xq5IykLNZ8gJf" target="_blank" rel="noopener">💬 Entrar no grupo VIP de promoções</a></header>
 <div class="busca"><input id="q" type="search" inputmode="search" placeholder="Digite o nº ou o nome (ex: 12)" autocomplete="off"></div>
 <main id="lista">
 __ITENS__
