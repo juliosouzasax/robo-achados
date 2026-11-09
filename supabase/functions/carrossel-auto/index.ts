@@ -19,7 +19,17 @@ async function conf(chave: string) {
 const brl = (n: number) => "R$ " + Number(n).toFixed(2).replace(".", ",");
 
 // ---------- 1) gancho + cena absurda (texto) ----------
-async function ideia(titulos: string[]) {
+type Tema = "normal" | "natal" | "crianca";
+const RX_NATAL = /natal|natalin|papai noel|pisca[- ]pisca|pres[eé]pio|guirlanda|rena|bota de natal|meia de natal/i;
+const RX_CRIANCA = /infantil|crian[cç]|beb[eê]|kids|brinquedo|boneca|carrinho|moto(?:rizada)? el[eé]trica|motinha|piscina|pel[uú]cia|mamadeira|escolar|lancheira|mochila|pula[- ]pula|bolinha|massinha/i;
+// a cada 3 carrosséis: 1 normal, 1 de Natal, 1 para crianças (mães de crianças compram mais)
+const temaDoNumero = (n: number): Tema => (["normal", "natal", "crianca"] as Tema[])[(n - 1) % 3];
+const DICA_TEMA: Record<Tema, string> = {
+  normal: "",
+  natal: ' O carrossel é de NATAL: o gancho e a cena devem ter clima natalino (presente, decoração, árvore, ceia).',
+  crianca: ' O carrossel é para MÃES DE CRIANÇAS: o gancho fala com a mãe ("não acredito que achei isso na Shopee", "meu filho ficou louco") e a cena mostra uma criança pequena feliz com um objeto ou brinquedo, fotorrealista.',
+};
+async function ideia(titulos: string[], tema: Tema = "normal") {
   const r = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Bearer ${OPENAI}` },
@@ -32,7 +42,7 @@ async function ideia(titulos: string[]) {
           `Produtos do carrossel: ${titulos.join("; ")}.\n` +
           `Crie: "gancho" (até 70 caracteres, tom de 'achei que era furada/bobeira, mas virou necessidade', sem emoji), ` +
           `"destaque" (1 a 3 palavras do próprio gancho, que ficam numa faixa laranja), ` +
-          `"cena" (uma cena absurda e impossível, fotorrealista, de UM objeto do dia a dia ganhando traços de bicho, pessoa ou outra coisa, ligada ao tema dos produtos; até 220 caracteres).\n` +
+          `"cena" (uma cena absurda e impossível, fotorrealista, de UM objeto do dia a dia ganhando traços de bicho, pessoa ou outra coisa, ligada ao tema dos produtos; até 220 caracteres).${DICA_TEMA[tema]}\n` +
           `Responda EXATAMENTE neste formato: {"gancho":"...","destaque":"...","cena":"..."}` },
       ],
     }),
@@ -189,6 +199,7 @@ async function montar() {
   const { data: chaves } = await db.from("config").select("chave").like("chave", "carrossel_%");
   const n = Math.max(0, ...(chaves ?? []).map((c: any) => parseInt(String(c.chave).split("_")[1]) || 0)) + 1;
   const num = String(n).padStart(3, "0");
+  const tema = temaDoNumero(n);
   const { data: pubs } = await db.from("publicacoes").select("detalhe").eq("status", "carrossel");
   const usados = new Set<number>();
   for (const p of pubs ?? []) for (const m of String(p.detalhe ?? "").matchAll(/ids ([\d,]+)/g)) m[1].split(",").forEach((x) => usados.add(+x));
@@ -196,7 +207,11 @@ async function montar() {
   const { data: cand } = await db.from("produtos").select("id,titulo,titulo_curto,preco,imagem_url,link_afiliado,vendidos")
     .eq("ativo", true).not("imagem_url", "is", null).not("link_afiliado", "is", null)
     .order("vendidos", { ascending: false, nullsFirst: false }).limit(60);
-  const pool = (cand ?? []).filter((p: any) => !usados.has(p.id)).sort(() => Math.random() - 0.5);
+  const livres = (cand ?? []).filter((p: any) => !usados.has(p.id)).sort(() => Math.random() - 0.5);
+  const rx = tema === "natal" ? RX_NATAL : tema === "crianca" ? RX_CRIANCA : null;
+  const doTema = (p: any) => !!rx && rx.test(`${p.titulo} ${p.titulo_curto ?? ""}`);
+  // produtos do tema primeiro; se faltar, completa com os demais (e o resto do rodízio segue)
+  const pool = rx ? [...livres.filter(doTema), ...livres.filter((p: any) => !doTema(p) && !RX_NATAL.test(p.titulo) && !RX_CRIANCA.test(p.titulo))] : livres.filter((p: any) => !RX_NATAL.test(p.titulo) && !RX_CRIANCA.test(p.titulo));
 
   const slides: { p: any; bin: Uint8Array }[] = [];
   for (const p of pool) {
@@ -205,7 +220,7 @@ async function montar() {
   }
   if (slides.length < 5) throw new Error("poucos produtos com foto utilizável: " + slides.length);
 
-  const idea = await ideia(slides.map((s) => s.p.titulo_curto || s.p.titulo));
+  const idea = await ideia(slides.map((s) => s.p.titulo_curto || s.p.titulo), tema);
   const capa = await capaComLogo(await gerarCapa(idea));
 
   const tag = `car${num}-${Date.now()}`;
@@ -214,12 +229,12 @@ async function montar() {
   urls.push(await subir(`${tag}-6.jpg`, await slideFinal(num), "image/jpeg"));
 
   const lista = slides.map((s, i) => `${i + 1}️⃣ ${s.p.titulo_curto || s.p.titulo} (${brl(s.p.preco)})`).join("\n");
-  const legenda = `${idea.gancho}\n\n5 achadinhos da Shopee que valem cada centavo 👇\n${lista}\n\n` +
-    `Comenta QUERO que eu te mando os links no direct 🧡\n\nCarrossel ${num}\n\n#achadinhos #shopee #achadinhosdashopee #garimpo #casa`;
+  const legenda = `${idea.gancho}\n\n${tema === "natal" ? "5 achadinhos de Natal da Shopee 🎄👇" : tema === "crianca" ? "5 achadinhos da Shopee para os pequenos 🧸👇" : "5 achadinhos da Shopee que valem cada centavo 👇"}\n${lista}\n\n` +
+    `Comenta QUERO que eu te mando os links no direct 🧡\n\nCarrossel ${num}\n\n${tema === "natal" ? "#achadinhos #shopee #natal #decoracaodenatal #presentedenatal" : tema === "crianca" ? "#achadinhos #shopee #maternidade #mae #brinquedos #infantil" : "#achadinhos #shopee #achadinhosdashopee #garimpo #casa"}`;
   const resposta = `Segue os links que você solicitou do Carrossel ${num} 🧡\n` +
     slides.map((s, i) => `${i + 1}️⃣ ${s.p.titulo_curto || s.p.titulo} (${brl(s.p.preco)}) ${s.p.link_afiliado}`).join("\n") +
     `\nEntra no nosso grupo VIP de promoções, toda hora tem achado novo 👇 ${GRUPO}\n⚠️ Preço e disponibilidade podem mudar.`;
-  return { num, idea, urls, legenda, resposta, ids: slides.map((s) => s.p.id) };
+  return { num, tema, idea, urls, legenda, resposta, ids: slides.map((s) => s.p.id) };
 }
 
 Deno.serve(async (req) => {
