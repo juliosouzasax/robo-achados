@@ -40,7 +40,7 @@ def cartao(p: dict) -> str:
 PAGINA = """<!doctype html>
 <html lang="pt-BR"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Achados Decoded</title>
+<title>Garimpo da Gabi | Achadinhos da Shopee</title>
 <meta name="description" content="Os achadinhos da Shopee do @ogarimpodagabi. Procure pelo número do vídeo.">
 <style>
 :root{--laranja:#ee4d2d;--fundo:#fff7f4;--texto:#1f1f1f;--cinza:#6b6b6b;--cartao:#fff;--borda:#f1dcd5}
