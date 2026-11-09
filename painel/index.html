@@ -73,6 +73,12 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
 .heroi .spark{position:absolute;right:0;bottom:0;width:55%;height:62%;opacity:.95;pointer-events:none}
 
 /* kpis */
+.resultado .eq{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:8px;text-align:center}
+.resultado .eq b{display:block;font-size:1.25rem;font-weight:800}
+.resultado .eq span{color:var(--suave);font-size:.76rem}
+.resultado .eq .op{font-size:1.4rem;color:var(--apagado);font-weight:700}
+.resultado .res b.pos{color:var(--verde)} .resultado .res b.neg{color:var(--vermelho)}
+.resultado .cats{margin-top:12px;padding-top:10px;border-top:1px solid var(--linha-fraca);color:var(--suave);font-size:.8rem;display:flex;flex-wrap:wrap;gap:6px 16px}
 .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
 .kpi{background:linear-gradient(180deg,var(--grafite-2),var(--grafite));border:1px solid var(--linha);border-radius:var(--raio-p);padding:12px 13px;display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center}
 .kpi svg{width:26px;height:26px;color:var(--ouro);grid-row:span 2}
@@ -309,6 +315,17 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
 
     <div id="alerta"></div>
 
+    <section class="cartao resultado secao" aria-labelledby="t-resultado">
+      <div class="cab"><h2 id="t-resultado">Resultado</h2><span class="extra">30 dias</span></div>
+      <div class="eq">
+        <div><b id="r-rec">—</b><span>Receitas (comissões)</span></div><div class="op">−</div>
+        <div><b id="r-desp">—</b><span>Despesas (tráfego)</span></div><div class="op">=</div>
+        <div class="res"><b id="r-res">—</b><span>Resultado</span></div>
+      </div>
+      <div class="cats" id="r-cats"></div>
+      <p class="nota">Receitas = comissões da Shopee (sem pedidos cancelados). Despesas = investimento lançado em tráfego pago.</p>
+    </section>
+
     <div class="grade-2 secao">
       <section class="cartao" id="agenda" aria-labelledby="t-dia">
         <div class="cab"><h2 id="t-dia"><svg><use href="#i-calendario"/></svg>Conteúdos do dia</h2><span class="extra" id="prox"></span></div>
@@ -427,10 +444,26 @@ async function carregar() {
     const r = await fetch("/api/dados", { cache: "no-store" });
     const d = await r.json();
     if (d.erro) throw new Error(d.erro);
-    ultimo = d; desenhar(d);
+    ultimo = d; desenhar(d); resultado();
   } catch (e) {
     $("sub").textContent = "Não consegui carregar agora. Tente de novo em alguns minutos.";
   } finally { b.classList.remove("girando"); }
+}
+
+async function resultado() {
+  try {
+    const r = await fetch("/api/despesas", { cache: "no-store" }); const j = await r.json();
+    if (j.erro) throw new Error(j.erro);
+    const ini = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+    const lista = (j.despesas || []).filter((x) => x.data >= ini);
+    const desp = lista.reduce((s, x) => s + (Number(x.valor) || 0), 0);
+    const rec = ultimo ? Number(ultimo._comAtual) || 0 : 0;
+    const res = rec - desp;
+    $("r-rec").textContent = brl(rec); $("r-desp").textContent = brl(desp);
+    $("r-res").textContent = brl(res); $("r-res").className = res >= 0 ? "pos" : "neg";
+    const porCat = {}; for (const x of lista) porCat[x.categoria || "outros"] = (porCat[x.categoria || "outros"] || 0) + Number(x.valor);
+    $("r-cats").innerHTML = Object.entries(porCat).map(([c, v]) => `<span>${esc(c)}: <b>${brl(v)}</b></span>`).join("") || "<span>Nenhuma despesa lançada ainda.</span>";
+  } catch (e) { $("r-desp").textContent = "—"; $("r-res").textContent = "—"; }
 }
 
 function desenhar(d) {
@@ -473,6 +506,7 @@ function desenhar(d) {
   const antes = linhas.filter((l) => valida(l) && em(l, ini60, ini30));
   const soma = (arr) => arr.reduce((s, l) => s + l.com, 0);
   const comAtual = soma(atual), comAntes = soma(antes);
+  d._comAtual = comAtual;
   const pedidosDe = (arr) => new Set(arr.map((l) => l.orderId)).size;
   const itensDe = (arr) => arr.reduce((s, l) => s + l.qtd, 0);
 
