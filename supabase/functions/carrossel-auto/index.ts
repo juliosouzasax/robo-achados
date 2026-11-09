@@ -237,6 +237,30 @@ async function montar() {
   return { num, tema, idea, urls, legenda, resposta, ids: slides.map((s) => s.p.id) };
 }
 
+// Links com Sub ID (canal "car", ref = número do carrossel): o painel mostra de onde vieram as vendas
+async function respostaRastreada(num: number, ids: number[], fallback: string): Promise<string> {
+  try {
+    const { data: ps } = await db.from("produtos").select("id,titulo,titulo_curto,preco,link_afiliado").in("id", ids);
+    if (!ps?.length) return fallback;
+    const base = Deno.env.get("SUPABASE_URL")! + "/functions/v1/robo";
+    const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const linhas: string[] = [];
+    for (let i = 0; i < ids.length; i++) {
+      const p = ps.find((x) => x.id === ids[i]);
+      if (!p) continue;
+      let link = p.link_afiliado as string;
+      try {
+        const r = await fetch(`${base}?acao=link_rastreado&id=${p.id}&canal=car&ref=${num}`, { headers: { Authorization: `Bearer ${key}`, apikey: key } });
+        const j = await r.json();
+        if (j?.link) link = j.link;
+      } catch (_) { /* usa o link normal */ }
+      linhas.push(`${i + 1}️⃣ ${p.titulo_curto || p.titulo} (${brl(p.preco)}) ${link}`);
+    }
+    return `Segue os links que você solicitou do Carrossel ${num} 🧡\n` + linhas.join("\n") +
+      `\nEntra no nosso grupo VIP de promoções, toda hora tem achado novo 👇 ${GRUPO}\n⚠️ Preço e disponibilidade podem mudar.`;
+  } catch (_) { return fallback; }
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ erro: "use POST" }, 405);
   const conv = await conf("yt_convite");
@@ -250,7 +274,8 @@ Deno.serve(async (req) => {
       const pronto = await conf("carrossel_pronto");
       const pk = pronto ? JSON.parse(pronto) : await montar();
       const midia = await postar(pk.urls, pk.legenda);
-      await db.from("config").upsert({ chave: `carrossel_${pk.num}`, valor: pk.resposta, atualizado: new Date().toISOString() });
+      const respostaFinal = await respostaRastreada(pk.num, pk.ids, pk.resposta);
+      await db.from("config").upsert({ chave: `carrossel_${pk.num}`, valor: respostaFinal, atualizado: new Date().toISOString() });
       await db.from("publicacoes").insert({ tipo: "feed", status: "carrossel", ig_media_id: midia, detalhe: `carrossel ${pk.num}: ids ${pk.ids.join(",")}` });
       if (pronto) await db.from("config").delete().eq("chave", "carrossel_pronto");
       return json({ publicado: midia, numero: pk.num, urls: pk.urls });

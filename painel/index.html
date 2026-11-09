@@ -751,7 +751,7 @@ function desenhar(d) {
   $("ver-mais").textContent = `Ver todos os ${lista.length} itens`;
 
   // origem das vendas (subIds dos links)
-  const ORIG = [["reel", "Reels"], ["story", "Stories"], ["dm", "Direct"], ["bio", "Vitrine da bio"], ["wpp", "Grupo do WhatsApp"], ["gabi", "Gerador de links"], ["", "Antes do rastreio"]];
+  const ORIG = [["reel", "Reels"], ["car", "Carrosséis"], ["ads", "Anúncios"], ["story", "Stories"], ["dm", "Direct"], ["bio", "Vitrine da bio"], ["wpp", "Grupo do WhatsApp"], ["gabi", "Gerador de links"], ["", "Antes do rastreio"]];
   $("origens").innerHTML = ORIG.map(([k, rot]) => {
     const ls = atual.filter((l) => (k ? l.canal === k : !ORIG.some(([c]) => c && c === l.canal)));
     return `<div class="origem ${ls.length ? "tem" : ""}"><b>${brl(soma(ls))}</b><span>${rot}</span><small>${pedidosDe(ls)} ${pedidosDe(ls) === 1 ? "pedido" : "pedidos"}</small></div>`;
