@@ -540,8 +540,7 @@ async function carregar() {
 const TESTES = { T1: "Teste 1 · Seguidores (visita ao perfil)", T2: "Teste 2 · Grupo VIP (WhatsApp)", T3: "Teste 3 · Engajamento (QUERO)" };
 async function trafego() {
   try {
-    const r = await fetch("/api/trafego", { cache: "no-store" }); const j = await r.json();
-    if (j.erro) throw new Error(j.erro);
+    const r = await fetch("/trafego.json", { cache: "no-store" }); const j = await r.json();
     const a = j.anuncios || [];
     const soma = (k) => a.reduce((s, x) => s + (Number(x[k]) || 0), 0);
     const gasto = soma("gasto"), res = soma("resultados");
@@ -555,7 +554,7 @@ async function trafego() {
       const linhas = g.map((x) => `<div class="tr-ad${x.ad_id === melhor ? " melhor" : ""}"><span class="n">${esc(x.criativo || x.nome)}</span><span class="v">${brl(Number(x.gasto) || 0)}</span><span class="v">${Number(x.resultados) ? fmt.format(x.resultados) + " res. · " + brl(Number(x.custo_resultado) || 0) : "—"}</span></div>`).join("");
       return `<div class="tr-teste"><h3>${esc(TESTES[t] || t)}<span>${brl(gs)} · ${rs ? brl(gs / rs) + "/res." : "sem resultados ainda"}</span></h3>${linhas}</div>`;
     }).join("") || "<span>Sem dados de tráfego ainda.</span>";
-    const up = a.map((x) => x.atualizado_em).filter(Boolean).sort().pop();
+    const up = j.atualizado_em;
     $("tr-atual").textContent = up ? "atualizado " + hora(new Date(up)) : "";
   } catch (e) { $("tr-testes").textContent = "Não consegui carregar o tráfego agora."; }
 }
