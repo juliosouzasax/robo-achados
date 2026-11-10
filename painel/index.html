@@ -202,14 +202,49 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
 .fila .tag{grid-row:span 2;font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:999px;border:1px solid var(--linha);color:var(--suave);white-space:nowrap}
 .fila .tag.novo{color:var(--ouro-claro);border-color:rgba(232,182,76,.5)}
 .fila li.vez .nome-it{color:var(--ouro-claro)}
-.tr-teste{border-top:1px solid var(--linha-fraca);padding:12px 0 4px}
-.tr-teste:first-child{border-top:0;padding-top:2px}
-.tr-teste h3{margin:0 0 6px;font-size:.88rem;font-weight:700;display:flex;justify-content:space-between;gap:8px}
-.tr-teste h3 span{color:var(--suave);font-weight:600;font-size:.76rem}
-.tr-ad{display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;align-items:center;padding:5px 0;font-size:.8rem}
-.tr-ad .n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tr-ad .v{color:var(--suave);text-align:right;white-space:nowrap}
-.tr-ad.melhor .n{color:var(--ouro-claro);font-weight:700}
+.tr-topo{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 14px}
+.tr-topo .tx{flex:1;min-width:180px}
+.tr-topo h3{font-size:1.25rem;font-weight:800}
+.tr-topo p{margin:2px 0 0;color:var(--suave);font-size:.84rem}
+.tr-pill{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:12px;border:1px solid var(--linha);background:var(--grafite);font-size:.82rem;font-weight:700}
+.tr-pill i{width:8px;height:8px;border-radius:50%;background:var(--verde);box-shadow:0 0 8px var(--verde)}
+.tr-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px}
+.tr-card{display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--raio);border:1px solid var(--linha);background:linear-gradient(180deg,var(--grafite-2),var(--grafite));box-shadow:inset 0 1px 0 rgba(232,182,76,.18)}
+.tr-card .ic{width:52px;height:52px;flex:none;border-radius:14px;display:grid;place-items:center;border:1px solid var(--linha);background:var(--grafite-3);color:var(--ouro)}
+.tr-card .ic svg{width:26px;height:26px}
+.tr-card small{display:block;color:var(--suave);font-size:.84rem;font-weight:600}
+.tr-card strong{display:block;font-size:1.7rem;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.tr-card.p{padding:13px 16px}
+.tr-card.p .ic{width:42px;height:42px;border-radius:12px}
+.tr-card.p .ic svg{width:21px;height:21px}
+.tr-card.p small{color:var(--texto);font-weight:700}
+.tr-card.p strong{font-size:1.3rem}
+.tr-card.p .cr{margin-left:auto;padding-left:12px;border-left:1px solid var(--linha-fraca);color:var(--suave);font-size:.76rem;text-align:right;white-space:nowrap}
+.tr-painel{margin-top:6px;padding:16px;border-radius:var(--raio);border:1px solid var(--linha);background:linear-gradient(180deg,var(--grafite-2),var(--grafite))}
+.tr-cab{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:12px}
+.tr-cab h3{display:flex;align-items:center;gap:10px;font-size:1.05rem;font-weight:800;flex:1;min-width:200px}
+.tr-cab h3 svg{width:22px;height:22px;color:var(--ouro)}
+.tr-abas{display:flex;padding:4px;border-radius:12px;border:1px solid var(--linha);background:var(--fundo);max-width:100%;overflow-x:auto}
+.tr-abas button{border:0;background:transparent;border-radius:9px;padding:8px 14px;font-size:.84rem;font-weight:700;color:var(--suave);cursor:pointer;white-space:nowrap}
+.tr-abas button.on{background:linear-gradient(180deg,var(--ouro-claro),var(--ouro));color:#1a1405}
+.tr-tab{border:1px solid var(--linha-fraca);border-radius:var(--raio-p);background:rgba(255,255,255,.02);padding:2px 14px}
+.tr-l{display:grid;grid-template-columns:minmax(0,1.5fr) 74px minmax(0,1.9fr) 84px;gap:10px;align-items:center;padding:12px 0;border-top:1px solid var(--linha-fraca);font-size:.9rem}
+.tr-l.h{border-top:0;color:var(--suave);font-weight:700;font-size:.8rem}
+.tr-l .n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr-l .n em{font-style:normal;color:var(--suave);font-weight:500}
+.tr-l .n b{font-weight:800}
+.tr-l .r{display:flex;align-items:center;gap:10px;min-width:0}
+.tr-l .r span{min-width:34px;font-weight:800}
+.tr-l .r div{flex:1;height:8px;border-radius:99px;background:var(--grafite-3);overflow:hidden}
+.tr-l .r i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--ouro-escuro),var(--ouro-claro))}
+.tr-l .c{text-align:right}
+.tr-l.melhor .n b{color:var(--ouro-claro)}
+.tr-mais{display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;padding:12px 14px;border-radius:var(--raio-p);border:1px solid var(--linha-fraca);background:rgba(255,255,255,.02);cursor:pointer;color:var(--ouro-claro);font-size:.88rem;font-weight:700}
+.tr-mais svg{width:16px;height:16px}
+.tr-mais.on svg{transform:rotate(180deg)}
+.tr-sem{display:none;margin-top:6px;padding:0 14px;border:1px solid var(--linha-fraca);border-radius:var(--raio-p)}
+.tr-sem.on{display:block}
+@media(max-width:560px){.tr-l{grid-template-columns:minmax(0,1.3fr) 62px minmax(0,1fr) 62px;gap:6px;font-size:.8rem}.tr-l .r div{display:none}}
 .mini-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 .mini-kpis div{border:1px solid var(--linha-fraca);border-radius:10px;padding:9px 10px;background:rgba(255,255,255,.02)}
 .mini-kpis b{display:block;font-size:1.15rem;font-weight:800}
@@ -422,11 +457,20 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
     </section>
 
     <h2 class="titulo-secao" id="trafego">Tráfego pago</h2>
-    <section class="cartao" aria-labelledby="t-trafego">
-      <div class="cab"><h2 id="t-trafego"><svg><use href="#i-alvo"/></svg>Teste de anúncios (Meta)</h2><span class="extra" id="tr-atual"></span></div>
-      <div class="mini-kpis" id="tr-kpis"></div>
-      <div id="tr-testes"></div>
-      <p class="nota" id="tr-nota">Teste de 2 dias, R$ 10/dia por campanha: seguidores, grupo VIP e engajamento (QUERO).</p>
+    <section aria-labelledby="t-trafego">
+      <div class="tr-topo">
+        <div class="tx"><h3 id="t-trafego">Tráfego pago</h3><p>Visão geral dos seus anúncios</p></div>
+        <span class="tr-pill"><i></i>Meta Ads</span>
+        <span class="tr-pill" id="tr-atual">Desde o início</span>
+      </div>
+      <div class="tr-grade" id="tr-kpis"></div>
+      <div class="tr-grade" id="tr-resumo"></div>
+      <div class="tr-painel">
+        <div class="tr-cab"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 13 9 5 9-5"/></svg>Desempenho dos criativos</h3><div class="tr-abas" id="tr-abas"></div></div>
+        <div class="tr-tab" id="tr-tab"></div>
+        <button class="tr-mais" id="tr-mais" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg>Ver criativos sem investimento</button>
+        <div class="tr-sem" id="tr-sem"></div>
+      </div>
     </section>
 
     <p class="rodape" id="rodape"></p>
@@ -538,25 +582,43 @@ async function carregar() {
 }
 
 const TESTES = { T1: "Teste 1 · Seguidores (visita ao perfil)", T2: "Teste 2 · Grupo VIP (WhatsApp)", T3: "Teste 3 · Engajamento (QUERO)" };
+let trAba = "T2";
+const TR_NOMES = { T1: ["01", "Visitas ao perfil"], T2: ["02", "Grupo VIP"], T3: ["03", "Engajamento"] };
+const TR_ICO = { T1: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>', T2: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c.5-4 3-6 6-6s5.5 2 6 6M16 14c3 0 5 1.6 5.5 5"/>', T3: '<path d="M4 5h16v11H9l-5 4V5Z"/>' };
+const brlc = (v) => v > 0 && v < 0.01 ? "R$ " + v.toFixed(3).replace(".", ",") : brl(v);
+let trDados = null;
+function trDesenhar() {
+  const a = trDados.anuncios || [];
+  const soma = (l, k) => l.reduce((s, x) => s + (Number(x[k]) || 0), 0);
+  const ic = (d) => `<span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg></span>`;
+  $("tr-kpis").innerHTML = [["Investimento total", brl(soma(a, "gasto")), '<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/>'], ["Alcance", fmt.format(soma(a, "alcance")), TR_ICO.T2], ["Resultados", fmt.format(soma(a, "resultados")), '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>']]
+    .map(([t, v, d]) => `<div class="tr-card">${ic(d)}<div><small>${t}</small><strong>${v}</strong></div></div>`).join("");
+  $("tr-resumo").innerHTML = ["T1", "T2", "T3"].map((t) => {
+    const g = a.filter((x) => x.teste === t), gs = soma(g, "gasto"), rs = soma(g, "resultados");
+    return `<div class="tr-card p">${ic(TR_ICO[t])}<div><small>${TR_NOMES[t][0]} • ${TR_NOMES[t][1]}</small><strong>${brl(gs)}</strong></div><div class="cr">${rs ? brlc(gs / rs) + " / resultado" : "sem resultados"}</div></div>`;
+  }).join("");
+  $("tr-abas").innerHTML = ["T1", "T2", "T3"].map((t) => `<button type="button" data-t="${t}" class="${t === trAba ? "on" : ""}">${TR_NOMES[t][1]}</button>`).join("");
+  $("tr-abas").querySelectorAll("button").forEach((b) => (b.onclick = () => { trAba = b.dataset.t; trDesenhar(); }));
+  const g = a.filter((x) => x.teste === trAba);
+  const com = g.filter((x) => Number(x.gasto) > 0).sort((p, q) => Number(q.resultados) - Number(p.resultados));
+  const sem = g.filter((x) => !(Number(x.gasto) > 0));
+  const max = Math.max(1, ...com.map((x) => Number(x.resultados) || 0));
+  const melhor = com.filter((x) => Number(x.resultados) > 0).sort((p, q) => Number(p.custo_resultado) - Number(q.custo_resultado))[0];
+  const nome = (x) => { const m = String(x.criativo || x.nome).match(/^(\S+)\s*(.*)$/); return `<b>${esc(m[1])}</b> <em>${esc(m[2])}</em>`; };
+  const linha = (x) => { const r = Number(x.resultados) || 0; return `<div class="tr-l${melhor && x.ad_id === melhor.ad_id ? " melhor" : ""}"><span class="n">${nome(x)}</span><span>${brl(Number(x.gasto) || 0)}</span><span class="r">${r ? `<span>${fmt.format(r)}</span><div><i style="width:${Math.max(4, (r / max) * 100)}%"></i></div>` : "<span>—</span><div></div>"}</span><span class="c">${r ? brlc(Number(x.custo_resultado) || 0) : "—"}</span></div>`; };
+  const cab = '<div class="tr-l h"><span>Criativo</span><span>Investido</span><span>Resultados</span><span class="c">Custo/res.</span></div>';
+  $("tr-tab").innerHTML = cab + (com.map(linha).join("") || '<div class="tr-l"><span class="n">Ainda sem investimento neste teste.</span></div>');
+  $("tr-sem").innerHTML = sem.map(linha).join("");
+  $("tr-mais").style.display = sem.length ? "" : "none";
+  $("tr-mais").lastChild.textContent = `Ver criativos sem investimento (${sem.length})`;
+}
 async function trafego() {
   try {
-    const r = await fetch("/trafego.json", { cache: "no-store" }); const j = await r.json();
-    const a = j.anuncios || [];
-    const soma = (k) => a.reduce((s, x) => s + (Number(x[k]) || 0), 0);
-    const gasto = soma("gasto"), res = soma("resultados");
-    $("tr-kpis").innerHTML = [["Investido", brl(gasto)], ["Alcance", fmt.format(soma("alcance"))], ["Resultados", fmt.format(res)]]
-      .map(([t, v]) => `<div class="kpi" style="grid-template-columns:1fr"><strong>${v}</strong><span>${t}</span></div>`).join("");
-    const grupos = {}; for (const x of a) (grupos[x.teste] = grupos[x.teste] || []).push(x);
-    $("tr-testes").innerHTML = Object.keys(grupos).sort().map((t) => {
-      const g = grupos[t], gs = g.reduce((s, x) => s + Number(x.gasto || 0), 0), rs = g.reduce((s, x) => s + Number(x.resultados || 0), 0);
-      const comRes = g.filter((x) => Number(x.resultados) > 0).sort((p, q) => Number(p.custo_resultado) - Number(q.custo_resultado));
-      const melhor = comRes[0] && comRes[0].ad_id;
-      const linhas = g.map((x) => `<div class="tr-ad${x.ad_id === melhor ? " melhor" : ""}"><span class="n">${esc(x.criativo || x.nome)}</span><span class="v">${brl(Number(x.gasto) || 0)}</span><span class="v">${Number(x.resultados) ? fmt.format(x.resultados) + " res. · " + brl(Number(x.custo_resultado) || 0) : "—"}</span></div>`).join("");
-      return `<div class="tr-teste"><h3>${esc(TESTES[t] || t)}<span>${brl(gs)} · ${rs ? brl(gs / rs) + "/res." : "sem resultados ainda"}</span></h3>${linhas}</div>`;
-    }).join("") || "<span>Sem dados de tráfego ainda.</span>";
-    const up = j.atualizado_em;
-    $("tr-atual").textContent = up ? "atualizado " + hora(new Date(up)) : "";
-  } catch (e) { $("tr-testes").textContent = "Não consegui carregar o tráfego agora."; }
+    const r = await fetch("/trafego.json", { cache: "no-store" }); trDados = await r.json();
+    $("tr-mais").onclick = () => { $("tr-mais").classList.toggle("on"); $("tr-sem").classList.toggle("on"); };
+    trDesenhar();
+    if (trDados.atualizado_em) $("tr-atual").textContent = "Atualizado às " + hora(new Date(trDados.atualizado_em));
+  } catch (e) { $("tr-tab").textContent = "Não consegui carregar o tráfego agora."; }
 }
 
 async function resultado() {
