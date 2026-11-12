@@ -331,5 +331,42 @@
    "gasto": 10.43,
    "cliques": 128
   }
- ]
+ ],
+ "cliques_shopee": {
+  "2026-11-11": {
+   "wpp-grupo": 47,
+   "bio-vitrine": 7,
+   "outros": 1,
+   "sem-subid": 19
+  },
+  "2026-11-10": {
+   "wpp-grupo": 38,
+   "outros": 4,
+   "sem-subid": 24
+  },
+  "2026-11-09": {
+   "wpp-grupo": 19,
+   "sem-subid": 12,
+   "bio-vitrine": 2
+  },
+  "2026-11-08": {
+   "sem-subid": 32,
+   "wpp-grupo": 21,
+   "outros": 1
+  },
+  "2026-11-07": {
+   "outros": 11,
+   "wpp-grupo": 28,
+   "bio-vitrine": 2,
+   "sem-subid": 29
+  },
+  "2026-11-06": {
+   "wpp-grupo": 15
+  },
+  "2026-11-05": {
+   "wpp-grupo": 6,
+   "sem-subid": 12,
+   "bio-vitrine": 3
+  }
+ }
 }

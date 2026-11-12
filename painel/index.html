@@ -644,6 +644,12 @@ function roDesenhar() {
     + card("ROAS real", tr == null ? "—" : tr.toFixed(2).replace(".", ",") + "x", '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>', tr == null ? "" : tr >= 1 ? "pos" : "neg");
   const fl = (l) => `<div class="ro-l"><span>${diaCurto(l.dia)}</span><span>${brl(l.gasto)}</span><span>${brl(l.com)}</span><span class="${l.lucro >= 0 ? "pos" : "neg"}">${l.lucro >= 0 ? "" : "−"}${brl(Math.abs(l.lucro))}</span><span>${l.roas == null ? "—" : l.roas.toFixed(2).replace(".", ",") + "x"}</span></div>`;
   $("ro-tab").innerHTML = '<div class="ro-l h"><span>Dia</span><span>Gasto</span><span>Comissão</span><span>Lucro</span><span>ROAS</span></div>' + linhas.map(fl).join("");
+  const cs = trDados.cliques_shopee;
+  if (cs) {
+    const f2 = (dia) => { const o = cs[dia] || {}; const t = Object.values(o).reduce((a, b) => a + b, 0); return `<div class="ro-l"><span>${diaCurto(dia)}</span><span>${(trDados.diario.find((x) => x.dia === dia) || {}).cliques ?? "—"}</span><span>${t}</span><span>${o["wpp-grupo"] || 0}</span><span>${(o["sem-subid"] || 0) + (o["outros"] || 0)}</span></div>`; };
+    const dd = Object.keys(cs).sort().reverse();
+    $("ro-tab").innerHTML += '<h3 style="margin:18px 0 4px;font-size:.95rem">Cliques: anúncio × Shopee</h3><div class="ro-l h"><span>Dia</span><span>Meta</span><span>Shopee</span><span>Do grupo</span><span>Sem origem</span></div>' + dd.map(f2).join("");
+  }
   $("ro-nota").textContent = "Comissão = tudo que a Shopee pagou no dia (grupo, bio, Reels e carrosséis), sem pedidos cancelados. O anúncio leva gente ao perfil e ao grupo, então o ROAS é do conjunto, não de cada anúncio. A Shopee atualiza as vendas uma vez por dia.";
 }
 
