@@ -98,6 +98,8 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
 .alerta{margin-top:12px;border:1px solid rgba(239,83,80,.5);background:rgba(239,83,80,.08);border-radius:var(--raio-p);padding:12px 14px;font-size:.86rem}
 .alerta b{color:#ff8a87}
 .alerta p{margin:4px 0 0;color:var(--suave)}
+.alerta.amarelo{border-color:rgba(232,182,76,.55);background:rgba(232,182,76,.08)}.alerta.amarelo b{color:var(--ouro-claro)}
+#alertas-extra .alerta{margin-top:10px}
 
 /* linha do dia */
 .dia-resumo{color:var(--suave);font-size:.82rem;margin:-6px 0 6px}
@@ -387,6 +389,7 @@ h1,h2,h3{margin:0;letter-spacing:-.01em}
     </div>
 
     <div id="alerta"></div>
+    <div id="alertas-extra"></div>
 
     <section class="cartao resultado secao" aria-labelledby="t-resultado">
       <div class="cab"><h2 id="t-resultado">Resultado</h2><span class="extra" data-per>30 dias</span></div>
@@ -643,11 +646,46 @@ function roDesenhar() {
   $("ro-tab").innerHTML = '<div class="ro-l h"><span>Dia</span><span>Gasto</span><span>Comissão</span><span>Lucro</span><span>ROAS</span></div>' + linhas.map(fl).join("");
   $("ro-nota").textContent = "Comissão = tudo que a Shopee pagou no dia (grupo, bio, Reels e carrosséis), sem pedidos cancelados. O anúncio leva gente ao perfil e ao grupo, então o ROAS é do conjunto, não de cada anúncio. A Shopee atualiza as vendas uma vez por dia.";
 }
+
+let alDados = null;
+function alertas() {
+  const box = $("alertas-extra"); if (!box) return;
+  const agora = new Date(), out = [];
+  const add = (cor, tit, txt) => out.push(`<div class="alerta ${cor}"><b>${esc(tit)}</b><p>${esc(txt)}</p></div>`);
+  if (alDados) {
+    // 1) grupo do WhatsApp parado (07h–00h59)
+    const min = minBR(agora);
+    const wp = (alDados.publicacoes || []).filter((p) => p.tipo === "whatsapp" && p.status === "ok").map((p) => new Date(p.criado_em).getTime()).sort((a, b) => b - a);
+    if (wp.length && (min >= 7 * 60 + 30 || min < 60)) {
+      const mins = Math.round((agora.getTime() - wp[0]) / 60000);
+      if (mins > 80) add("", "Grupo do WhatsApp sem postagem há " + (mins >= 120 ? Math.floor(mins / 60) + "h" : mins + " min"), "Última postagem às " + hora(new Date(wp[0])) + ". Confira se o robô está rodando.");
+    }
+    // 2) estoque de achados com DE/POR
+    const ativos = (alDados.produtos || []).filter((p) => p.ativo);
+    if (ativos.some((p) => p.preco_original != null)) {
+      const dp = ativos.filter((p) => Number(p.preco_original) > Number(p.preco));
+      const livres = dp.filter((p) => !p.usado_whats_em || agora - new Date(p.usado_whats_em) > 3 * DIA);
+      if (dp.length < 12 || livres.length < 6) add("amarelo", "Poucos achados com DE/POR", `${dp.length} ativos com preço original maior, ${livres.length} sem uso nos últimos 3 dias. Hora de garimpar mais.`);
+    }
+  }
+  // 3) ROAS abaixo de 1 no último dia fechado
+  if (trDados && trDados.diario && roLinhas) {
+    const hoje = diaBR(agora);
+    const fechados = trDados.diario.filter((x) => x.dia < hoje && Number(x.gasto) > 0).sort((a, b) => (a.dia < b.dia ? 1 : -1));
+    if (fechados.length) {
+      const x = fechados[0], com = roLinhas.filter((l) => diaBR(l.data) === x.dia).reduce((s, l) => s + l.com, 0), r = com / Number(x.gasto);
+      if (r < 1) add("amarelo", "ROAS abaixo de 1 em " + diaCurto(x.dia), `Gastou ${brl(x.gasto)} e a comissão foi ${brl(com)} (${r.toFixed(2).replace(".", ",")}x). A Shopee atualiza as vendas uma vez por dia, então o dia pode subir.`);
+    }
+    // 4) dados de tráfego velhos
+    if (trDados.atualizado_em && agora - new Date(trDados.atualizado_em) > 12 * 3600000) add("amarelo", "Dados do tráfego desatualizados", "Atualizados às " + hora(new Date(trDados.atualizado_em)) + " de " + diaCurto(diaBR(new Date(trDados.atualizado_em))) + ".");
+  }
+  box.innerHTML = out.join("");
+}
 async function trafego() {
   try {
     const r = await fetch("/trafego.json", { cache: "no-store" }); trDados = await r.json();
     $("tr-mais").onclick = () => { $("tr-mais").classList.toggle("on"); $("tr-sem").classList.toggle("on"); };
-    trDesenhar(); roDesenhar();
+    trDesenhar(); roDesenhar(); alertas();
     if (trDados.atualizado_em) $("tr-atual").textContent = "Atualizado às " + hora(new Date(trDados.atualizado_em));
   } catch (e) { $("tr-tab").textContent = "Não consegui carregar o tráfego agora."; }
 }
@@ -702,7 +740,7 @@ function desenhar(d) {
     }
     l.produto = p || null;
   }
-  roLinhas = linhas.filter(valida); roDesenhar();
+  roLinhas = linhas.filter(valida); alDados = d; roDesenhar(); alertas();
   const W = janela(diaBR(agora));
   document.querySelectorAll("[data-per]").forEach((el) => { el.textContent = W.rot; });
   $("f-rotulo").textContent = W.n > 1 ? `${dmy(W.de)} a ${dmy(W.ate)}` : dmy(W.de);
